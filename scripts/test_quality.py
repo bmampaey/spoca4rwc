@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import pyfits
 import argparse
+from astropy.io import fits
+
 
 quality_bits = {
 0	: 'FLAT_REC == MISSING (Flatfield data not available)',
@@ -39,7 +40,7 @@ quality_bits = {
 
 def get_quality(filepath, hdu = 0, quality_keyword = 'QUALITY', ignore_bits = [0, 1, 2, 3, 4, 8]):
 	'''Return the quality value of the file, with ignore_bits set to 0'''
-	quality = pyfits.open(filepath)[hdu].header[quality_keyword]
+	quality = fits.open(filepath)[hdu].header[quality_keyword]
 	for bit in ignore_bits:
 		quality &= ~(1<<bit)
 	return quality
