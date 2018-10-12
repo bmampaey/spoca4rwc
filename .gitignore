@@ -102,3 +102,15 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Hidden files and folders
+.*
+
+# Non versioned stuff
+logrotate.state
+log
+python
+SPoCA
+CH_maps
+
+
