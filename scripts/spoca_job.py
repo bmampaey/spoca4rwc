@@ -22,6 +22,8 @@ class Job:
 	def parse_config_file(self, config_file):
 		'''Parse a config file and return it as a config object'''
 		config = configparser.ConfigParser()
+		# Force the parser to be case sensitive
+		config.optionxform = str
 		
 		try:
 			config.read(config_file)
@@ -67,12 +69,6 @@ class Job:
 
 class Classification(Job):
 	'''Job to run the classification program'''
-	MAP_TYPES = {
-		'A': 'ARMap',
-		'C': 'CHMap',
-		'S': 'SegmentedMap',
-		'M': 'MixedMap'
-	}
 	
 	def test_parameters(self):
 		'''Test the parameters of the program'''
@@ -82,14 +78,7 @@ class Classification(Job):
 		return_code, output, error = self(args = ['--help', 'testfile.fits'])
 		
 		return return_code == 0, 'Output: %s\nError: %s' % (output, error)
-	
-	def result_files(self, name):
-		'''Return the file names of the result files from the classification'''
-		results = list()
-		for m, suffix in cls.MAP_TYPES.items():
-			if self.kwargs['maps'].find(m) > -1:
-				results.append('.'.join([name, suffix, 'fits']))
-		return results
+
 
 
 class Tracking(Job):

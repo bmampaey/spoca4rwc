@@ -8,17 +8,14 @@ from datetime import datetime, timedelta
 from spoca_job import Classification, Tracking
 from test_quality import get_quality, get_quality_errors
 
-# Directory where the prepped AIA files are located
-aia_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
+# Path to the classification program
+classification_exec = '/home/rwceventdb/SPoCA/bin1/classification.x'
 
-# Path to the spoca classification program
-spoca_bin = '/home/rwceventdb/SPoCA/bin1/classification.x'
+# Path to the classification program config file
+classification_config_file = '/home/rwceventdb/scripts/AIA_CH.segmentation.config'
 
-# Path to the config of spoca classification program
-spoca_config = '/home/rwceventdb/AIA/AIA_CH.segmentation.config'
-
-# Wavelengths for spoca
-wavelengths = [193]
+# Path to the centers file
+classification_centers_file = '/home/rwceventdb/CH_maps/centers.txt'
 
 # Directory to output the maps
 maps_directory = '/home/rwceventdb/CH_maps/'
@@ -26,46 +23,20 @@ maps_directory = '/home/rwceventdb/CH_maps/'
 # Directory to output the stats
 stats_directory = '/home/rwceventdb/CH_stats/'
 
-# The times of day to run SPoCA
+# Directory where the prepped AIA files are located
+aia_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
+
+# Wavelengths for spoca
+wavelengths = [193]
+
+# The frequency to run the classification program
 run_frequency = timedelta(hours = 4)
 
 # The max time that must be waited before processing data
 max_delay = timedelta(days = 16)
 
 # Default path for the log file
-log_file =  '/home/rwceventdb/logs/run_spoca_CH.log'
-
-
-def setup_spoca(spoca_bin, configfile, output_dir):
-	
-	class segmentation_instance(segmentation):
-		pass
-	
-	segmentation_instance.set_parameters(configfile, output_dir)
-	segmentation_instance.bin = spoca_bin
-	ok, reason = segmentation_instance.test_parameters()
-	if ok:
-		logging.info('Spoca parameters in file %s seem ok', configfile)
-		logging.debug(reason)
-	else:
-		logging.warning('Spoca parameters in file %s could be wrong', configfile)
-		logging.warning(reason)
-	
-	return segmentation_instance
-
-
-def run_spoca(spoca, fitsfiles, name):
-	
-	logging.info('Running spoca on files %s', fitsfiles)
-	spoca_command = [spoca.bin] + spoca.build_arguments(fitsfiles, name)
-	spoca_process = subprocess.Popen(spoca_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	output, errors = spoca_process.communicate()
-	if spoca_process.returncode == 0:
-		logging.debug('Sucessfully ran spoca command %s, output: %s, errors: %s', ' '.join(spoca_command), str(output), str(errors))
-		return True
-	else:
-		logging.error('Error running spoca command %s, output: %s, errors: %s', ' '.join(spoca_command), str(output), str(errors))
-		return False
+log_file =  '/home/rwceventdb/log/run_spoca_CH.log'
 
 # Start point of the script
 if __name__ == '__main__':
@@ -76,7 +47,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description = 'Run SPoCA to extract CH maps from AIA 193A fits files')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
 	parser.add_argument('--log_file', '-l', default = log_file, help = 'The file path of the log file')
-	parser.add_argument('--start_date', '-s', default = '2010-05-13', help = 'Start date of AIA files, in form YYYY-MM-DD')
+	parser.add_argument('--start_date', '-s', default = '2010-05-20', help = 'Start date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--end_date', '-e', help = 'End date of AIA files to process, in form YYYY-MM-DD')
 	args = parser.parse_args()
 	
@@ -87,15 +58,15 @@ if __name__ == '__main__':
 		logging.basicConfig(level = logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
 	
 	# Create a classification job with the parameters
-	classification = Classification(spoca_bin, spoca_config, kwargs = {'outputDirectory': maps_directory})
+	classification = Classification(classification_exec, classification_config_file, kwargs = {'centersFile': classification_centers_file})
 	
 	# Test the classification  parameters
 	result, output = classification.test_parameters()
 	if result:
-		logging.debug('classification parameters in file %s seem GOOD', configfile)
+		logging.debug('classification parameters in file %s seem GOOD', classification_config_file)
 		logging.debug(output)
 	else:
-		logging.warning('classification parameters in file %s could be BAD', configfile)
+		logging.warning('classification parameters in file %s could be BAD', classification_config_file)
 		logging.warning(output)
 	
 	# Set the start and end date
@@ -123,20 +94,28 @@ if __name__ == '__main__':
 			# If max_delay has passed, then we continue, else we stop and wait
 			if datetime.now() - start_date >= max_delay:
 				logging.warning('Max delay %s was passed, skipping missing files' % max_delay)
+				continue
 			else:
 				logging.info('Max delay %s was not passed, waiting missing files' % max_delay)
 				break
 		
+		# We run the classification program
+		logging.debug('Running classification job:\n%s %s', classification, ' '.join(file_paths[w] for w in wavelengths))
+		
 		map_name = start_date.strftime('%Y%m%d_%H%M%S')
 		
-		# We run spoca
-		run_success = run_spoca(spoca, [file_paths[w] for w in wavelengths], map_name)
+		return_code, output, error = classification(args = [file_paths[w] for w in wavelengths], kwargs = {'outputDirectory': os.path.join(maps_directory, map_name)})
 		
-		# We check if the CH map exists
-		if run_success:
-			CH_map = os.path.join(maps_directory, map_name+'.SegmentedMap.fits')
-			if not os.path.exists(CH_map):
-				logging.error('Could not find CH_map %s', CH_map)
+		# We check if program ran succesfully
+		if return_code != 0:
+			logging.error('Classification job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', job, ' '.join(file_paths[w] for w in wavelengths), return_code, output, error)
+		else:
+			logging.info('Classification job on files "%s" ran without errors', ' '.join(file_paths[w] for w in wavelengths))
+			
+			# Get the map file
+			map_file_path = os.path.join(maps_directory, map_name + '.CHMap.fits')
+			if not os.path.exists(map_file_path):
+				logging.error('Could not find map file %s', map_file_path)
 				break
 		
 		# We update the start_date for the next run
