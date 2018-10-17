@@ -108,7 +108,7 @@ if __name__ == '__main__':
 		
 		# We check if program ran succesfully
 		if return_code != 0:
-			logging.error('Classification job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', job, ' '.join(file_paths[w] for w in wavelengths), return_code, output, error)
+			logging.error('Classification job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', ' '.join(file_paths[w] for w in wavelengths), return_code, output, error)
 		else:
 			logging.info('Classification job on files "%s" ran without errors', ' '.join(file_paths[w] for w in wavelengths))
 			
