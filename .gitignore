@@ -108,9 +108,6 @@ venv.bak/
 
 # Non versioned stuff
 logrotate.state
-log
 python
 SPoCA
-CH_maps
-
 
