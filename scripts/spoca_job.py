@@ -7,118 +7,69 @@ import argparse
 
 class Job:
 	'''Base class to run a program'''
-	def __init__(self, bin, config_file = None, args = [], kwargs = {}):
-		self.bin = bin
-		self.args = list()
-		self.kwargs = dict()
-		
-		if config_file is not None:
-			config = self.parse_config_file(config_file)
-			self.kwargs.update(config.defaults())
-		
-		self.args.extend(args)
-		self.kwargs.update(kwargs)
+	def __init__(self, executable, *args, **kwargs):
+		self.executable = executable
+		self.args = args
+		self.kwargs = kwargs
 	
-	def parse_config_file(self, config_file):
-		'''Parse a config file and return it as a config object'''
-		config = configparser.ConfigParser()
-		# Force the parser to be case sensitive
-		config.optionxform = str
+	def get_command(self, args = None, kwargs = None):
+		'''Return the command with the parameters set up'''
 		
-		try:
-			config.read(config_file)
-		except configparser.MissingSectionHeaderError as why:
-			# If no section is defined, add a default one
-			with open(config_file) as f:
-				text = f.read()
-			config.read_string('[DEFAULT]\n' + text, source=config_file)
+		# Merge init args and passed args
+		if args:
+			merged_args = self.args + args
+		else:
+			merged_args = self.args
 		
-		return config
-	
-	def get_parameters(self, args = [], kwargs = {}):
-		'''Return the parameters for the program'''
 		# Merge init kwargs and passed kwargs
-		merged_kwargs = self.kwargs.copy()
-		merged_kwargs.update(kwargs)
+		if kwargs:
+			# Passed kwargs take precedence over init kwargs
+			merged_kwargs = self.kwargs.copy()
+			merged_kwargs.update(kwargs)
+		else:
+			merged_kwargs = self.kwargs
 		
-		parameters = list()
+		# Add executable
+		command = [self.executable]
+		
+		# Add kwargs
 		for key, value in merged_kwargs.items():
-			if len(key) > 1:
-				parameters.append('--'+key)
-			else:
-				parameters.append('-'+key)
+			command.append('--'+key)
 			if value:
-				parameters.append(value)
+				command.append(value)
 		
-		# Add init args and passed args
-		parameters.extend(self.args + args)
+		# Add args
+		command.extend(merged_args)
 		
-		return parameters
+		return command
 	
-	def __call__(self, input = None, args = [], kwargs = {}):
+	def __call__(self, *args, input = None, **kwargs):
 		'''Run the program'''
-		command = [self.bin] + self.get_parameters(args, kwargs)
 		
-		process = subprocess.run(command, input = input, stdout = subprocess.PIPE, stderr = subprocess.PIPE, encoding='utf8')
+		command = self.get_command(args, kwargs)
+		
+		process = subprocess.run(command, input = input, stdout = subprocess.PIPE, stderr = subprocess.PIPE, encoding = 'utf8')
 		
 		return process.returncode, process.stdout, process.stderr
 	
 	def __str__(self):
-		return ' '.join([self.bin] + self.get_parameters())
-
-
-class Classification(Job):
-	'''Job to run the classification program'''
-	
-	def test_parameters(self):
-		'''Test the parameters of the program'''
-		if not os.path.exists(self.bin):
-			return False, 'Could not find executable "%s"' % self.bin
-		
-		return_code, output, error = self(args = ['--help', 'testfile.fits'])
-		
-		return return_code == 0, 'Output: %s\nError: %s' % (output, error)
-
-
-
-class Tracking(Job):
-	'''Job to run the tracking program'''
-	
-	def test_parameters(self):
-		'''Test the parameters of the program'''
-		if not os.path.exists(self.bin):
-			return False, 'Could not find executable "%s"' % self.bin
-		
-		return_code, output, error = self(args = ['--help', 'testfile1.fits', 'testfile2.fits'])
-		
-		return return_code == 0, 'Output: %s\nError: %s' % (output, error)
+		return ' '.join(self.get_command())
 
 
 # Start point of the script
 if __name__ == '__main__':
 	
-	parser = argparse.ArgumentParser(description='Test the parameters of a SPoCA program')
-	parser.add_argument('program', help='The program to test')
-	parser.add_argument('executable', help='The path to the executable')
-	parser.add_argument('config', help='The path to the config file')
-	parser.add_argument('parameter', nargs='*', help='Any additional parameter (must be preceded by -- delimiter)')
+	parser = argparse.ArgumentParser(description = 'Run a SPoCA program', prefix_chars = '-')
+	parser.add_argument('executable', help = 'The path to the executable')
+	parser.add_argument('parameters', metavar = 'PARAM', nargs = '*', help = 'Any additional parameter (must be preceded by "--")')
 	
 	args = parser.parse_args()
 	
-	if args.program.lower() == 'classification':
-		job = Classification(args.executable, args.config, args.parameter)
-	elif args.program.lower() == 'tracking':
-		job = Tracking(args.executable, args.config, args.parameter)
-	else:
-		job = None
+	program = Job(args.executable, *args.parameters)
 	
-	if job is None:
-		print('Unknown program')
-	else:
-		print(job)
-		result, output = job.test_parameters()
-		if result:
-			print('--- PARAMETERS SEEM GOOD ---')
-		else:
-			print('--- PARAMETERS SEEM BAD ---')
-		print(output)
+	print(program)
+	
+	result = program()
+	
+	print('Return:%s\nOutput:%s\nError:%s' % result)
+	

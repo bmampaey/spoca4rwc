@@ -1,21 +1,33 @@
 #!/usr/bin/env python3
-import os, sys
+import os
 import subprocess
 import logging
 import argparse
 import glob
 from datetime import datetime, timedelta
-from spoca_job import Classification, Tracking
-from test_quality import get_quality, get_quality_errors
+from spoca_job import Job
+from AIA_quality import get_quality, get_quality_errors
 
 # Path to the classification program
-classification_exec = '/home/rwceventdb/SPoCA/bin1/classification.x'
+classification_exec = '/home/rwceventdb/SPoCA/bin/classification.x'
 
 # Path to the classification program config file
-classification_config_file = '/home/rwceventdb/scripts/AIA_CH.segmentation.config'
+classification_config_file = '/home/rwceventdb/scripts/AIA_CH.classification.config'
 
 # Path to the centers file
 classification_centers_file = '/home/rwceventdb/CH_maps/centers.txt'
+
+# Path to the get_CH_map program
+get_CH_map_exec = '/home/rwceventdb/SPoCA/bin/get_CH_map.x'
+
+# Path to the get_CH_map program config file
+get_CH_map_config_file = '/home/rwceventdb/scripts/AIA_CH.get_CH_map.config'
+
+# Path to the tracking program
+tracking_exec = '/home/rwceventdb/SPoCA/bin/tracking.x'
+
+# Path to the tracking program config file
+tracking_config_file = '/home/rwceventdb/scripts/AIA_CH.tracking.config'
 
 # Directory to output the maps
 maps_directory = '/home/rwceventdb/CH_maps/'
@@ -36,12 +48,10 @@ run_frequency = timedelta(hours = 4)
 max_delay = timedelta(days = 16)
 
 # Default path for the log file
-log_file =  '/home/rwceventdb/log/run_spoca_CH.log'
+log_file =  '/home/rwceventdb/log/AIA_CH.run_spoca_jobs.log'
 
 # Start point of the script
 if __name__ == '__main__':
-	
-	script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 	
 	# Get the arguments
 	parser = argparse.ArgumentParser(description = 'Run SPoCA to extract CH maps from AIA 193A fits files')
@@ -57,17 +67,14 @@ if __name__ == '__main__':
 	else:
 		logging.basicConfig(level = logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
 	
-	# Create a classification job with the parameters
-	classification = Classification(classification_exec, classification_config_file, kwargs = {'centersFile': classification_centers_file})
+	# Create a classification job with the appropriate parameters
+	classification = Job(classification_exec, config = classification_config_file, centersFile = classification_centers_file)
 	
-	# Test the classification  parameters
-	result, output = classification.test_parameters()
-	if result:
-		logging.debug('classification parameters in file %s seem GOOD', classification_config_file)
-		logging.debug(output)
-	else:
-		logging.warning('classification parameters in file %s could be BAD', classification_config_file)
-		logging.warning(output)
+	# Create a get_CH_map job with the appropriate parameters
+	get_CH_map = Job(get_CH_map_exec, config = get_CH_map_config_file)
+	
+	# Create a tracking job with the appropriate parameters
+	tracking = Job(tracking_exec, config = tracking_config_file)
 	
 	# Set the start and end date
 	start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
@@ -76,11 +83,12 @@ if __name__ == '__main__':
 	# Start the loop
 	while start_date < end_date:
 		
-		# Find the AIA files we need
+		# Find the AIA files for the given date, wavelengths and required quality
 		file_paths = dict()
 		for wavelength in wavelengths:
 			for file_path in sorted(glob.glob(aia_file_pattern.format(date=start_date, wavelength=wavelength))):
 				quality = get_quality(file_path)
+				# A quality of 0 means no defect
 				if quality == 0:
 					file_paths[wavelength] = file_path
 					break
@@ -98,25 +106,44 @@ if __name__ == '__main__':
 			else:
 				logging.info('Max delay %s was not passed, waiting missing files' % max_delay)
 				break
+		else:
+			# Flatten the file paths
+			file_paths = [file_paths[w] for w in wavelengths]
 		
 		# We run the classification program
-		logging.debug('Running classification job:\n%s %s', classification, ' '.join(file_paths[w] for w in wavelengths))
+		logging.debug('Running classification job:\n%s %s', classification, ' '.join(file_paths))
 		
-		map_name = start_date.strftime('%Y%m%d_%H%M%S')
+		segmented_map_path = os.path.join(maps_directory, start_date.strftime('%Y%m%d_%H%M%S') + '.SegmentedMap.fits')
 		
-		return_code, output, error = classification(args = [file_paths[w] for w in wavelengths], kwargs = {'outputDirectory': os.path.join(maps_directory, map_name)})
+		return_code, output, error = classification(*file_paths, output = segmented_map_path)
 		
 		# We check if program ran succesfully
 		if return_code != 0:
-			logging.error('Classification job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', ' '.join(file_paths[w] for w in wavelengths), return_code, output, error)
+			logging.error('classification job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', ' '.join(file_paths), return_code, output, error)
+			break
+		elif not os.path.exists(segmented_map_path):
+			logging.error('Could not find output file %s', segmented_map_path)
+			break
 		else:
-			logging.info('Classification job on files "%s" ran without errors', ' '.join(file_paths[w] for w in wavelengths))
+			logging.info('classification job on files "%s" ran without errors', ' '.join(file_paths))
 			
-			# Get the map file
-			map_file_path = os.path.join(maps_directory, map_name + '.CHMap.fits')
-			if not os.path.exists(map_file_path):
-				logging.error('Could not find map file %s', map_file_path)
-				break
+		
+		# We run the get_CH_map program
+		logging.debug('Running get_CH_map job:\n%s %s', get_CH_map, segmented_map_path)
+		
+		CH_map_path = os.path.join(maps_directory, start_date.strftime('%Y%m%d_%H%M%S') + '.CHdMap.fits')
+		
+		return_code, output, error = get_CH_map(segmented_map_path, output = CH_map_path)
+		
+		# We check if program ran succesfully
+		if return_code != 0:
+			logging.error('get_CH_map job on file "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', segmented_map_path, return_code, output, error)
+			break
+		elif not os.path.exists(segmented_map_path):
+			logging.error('Could not find output file %s', CH_map_path)
+			break
+		else:
+			logging.info('get_CH_map job on files "%s" ran without errors', segmented_map_path)
 		
 		# We update the start_date for the next run
 		start_date += run_frequency
