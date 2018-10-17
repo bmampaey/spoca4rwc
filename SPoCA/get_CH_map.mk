@@ -3,9 +3,9 @@ TRACKINGLFLAGS=-lpthread
 IDLLFLAGS=-L /usr/local/idl/idl706/bin/bin.linux.x86_64 -lpthread -lidl -lXp -lXpm -lXmu -lXext -lXt -lSM -lICE  -lXinerama -lX11 -ldl -ltermcap -lrt -lm /usr/lib/libXm.a
 MAGICKLFLAGS=`Magick++-config --ldflags --libs`
 MAGICKCFLAGS=`Magick++-config --cppflags`
-CFLAGS=-Wall -fkeep-inline-functions -g -O3
+CFLAGS=-Wall -fkeep-inline-functions -g
 LFLAGS=-lcfitsio
-DFLAGS=
+DFLAGS=-D DEBUG
 
 all:bin/get_CH_map.x
 clean: rm bin/get_CH_map.x objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o

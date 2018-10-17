@@ -12,7 +12,7 @@ class Job:
 		self.args = args
 		self.kwargs = kwargs
 	
-	def get_command(self, args = None, kwargs = None):
+	def get_command(self, *args, **kwargs):
 		'''Return the command with the parameters set up'''
 		
 		# Merge init args and passed args
@@ -46,7 +46,7 @@ class Job:
 	def __call__(self, *args, input = None, **kwargs):
 		'''Run the program'''
 		
-		command = self.get_command(args, kwargs)
+		command = self.get_command(*args, **kwargs)
 		
 		process = subprocess.run(command, input = input, stdout = subprocess.PIPE, stderr = subprocess.PIPE, encoding = 'utf8')
 		

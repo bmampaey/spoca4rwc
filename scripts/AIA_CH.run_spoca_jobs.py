@@ -110,14 +110,14 @@ if __name__ == '__main__':
 			# Flatten the file paths
 			file_paths = [file_paths[w] for w in wavelengths]
 		
-		# We run the classification program
-		logging.debug('Running classification job:\n%s %s', classification, ' '.join(file_paths))
-		
+		# File path for the Segmented map
 		segmented_map_path = os.path.join(maps_directory, start_date.strftime('%Y%m%d_%H%M%S') + '.SegmentedMap.fits')
 		
+		# We run the classification program
+		logging.debug('Running classification job:\n%s', ' '.join(classification.get_command(*file_paths, output = segmented_map_path)))
 		return_code, output, error = classification(*file_paths, output = segmented_map_path)
 		
-		# We check if program ran succesfully
+		# We check if the program ran succesfully
 		if return_code != 0:
 			logging.error('classification job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', ' '.join(file_paths), return_code, output, error)
 			break
@@ -128,14 +128,14 @@ if __name__ == '__main__':
 			logging.info('classification job on files "%s" ran without errors', ' '.join(file_paths))
 			
 		
-		# We run the get_CH_map program
-		logging.debug('Running get_CH_map job:\n%s %s', get_CH_map, segmented_map_path)
-		
+		# File path for the CH map
 		CH_map_path = os.path.join(maps_directory, start_date.strftime('%Y%m%d_%H%M%S') + '.CHdMap.fits')
 		
-		return_code, output, error = get_CH_map(segmented_map_path, output = CH_map_path)
+		# We run the get_CH_map program
+		logging.debug('Running get_CH_map job:\n%s', ' '.join(get_CH_map.get_command(segmented_map_path, *file_paths, output = CH_map_path)))
+		return_code, output, error = get_CH_map(segmented_map_path, *file_paths, output = CH_map_path)
 		
-		# We check if program ran succesfully
+		# We check if the program ran succesfully
 		if return_code != 0:
 			logging.error('get_CH_map job on file "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', segmented_map_path, return_code, output, error)
 			break
