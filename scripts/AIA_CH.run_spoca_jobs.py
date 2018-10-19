@@ -50,6 +50,14 @@ max_delay = timedelta(days = 16)
 # Default path for the log file
 log_file =  '/home/rwceventdb/log/AIA_CH.run_spoca_jobs.log'
 
+def date_range(start, end, step):
+	'''Equivalent to range for date'''
+	date = start.replace()
+	while date < end:
+		yield date
+		date += step
+
+
 # Start point of the script
 if __name__ == '__main__':
 	
@@ -81,12 +89,12 @@ if __name__ == '__main__':
 	end_date = datetime.strptime(args.end_date, '%Y-%m-%d') if args.end_date else datetime.utcnow()
 	
 	# Start the loop
-	while start_date < end_date:
+	for date in date_range(start_date, end_date, run_frequency):
 		
 		# Find the AIA files for the given date, wavelengths and required quality
 		file_paths = dict()
 		for wavelength in wavelengths:
-			for file_path in sorted(glob.glob(aia_file_pattern.format(date=start_date, wavelength=wavelength))):
+			for file_path in sorted(glob.glob(aia_file_pattern.format(date=date, wavelength=wavelength))):
 				quality = get_quality(file_path)
 				# A quality of 0 means no defect
 				if quality == 0:
@@ -97,10 +105,10 @@ if __name__ == '__main__':
 		
 		# Check if we have all the files we need
 		if not all(w in file_paths for w in wavelengths):
-			logging.info('Missing AIA files for date %s', start_date)
+			logging.info('Missing AIA files for date %s', date)
 			
 			# If max_delay has passed, then we continue, else we stop and wait
-			if datetime.now() - start_date >= max_delay:
+			if datetime.now() - date >= max_delay:
 				logging.warning('Max delay %s was passed, skipping missing files' % max_delay)
 				continue
 			else:
@@ -111,7 +119,7 @@ if __name__ == '__main__':
 			file_paths = [file_paths[w] for w in wavelengths]
 		
 		# File path for the Segmented map
-		segmented_map_path = os.path.join(maps_directory, start_date.strftime('%Y%m%d_%H%M%S') + '.SegmentedMap.fits')
+		segmented_map_path = os.path.join(maps_directory, date.strftime('%Y%m%d_%H%M%S') + '.SegmentedMap.fits')
 		
 		# We run the classification program
 		logging.debug('Running classification job:\n%s', ' '.join(classification.get_command(*file_paths, output = segmented_map_path)))
@@ -129,7 +137,7 @@ if __name__ == '__main__':
 			
 		
 		# File path for the CH map
-		CH_map_path = os.path.join(maps_directory, start_date.strftime('%Y%m%d_%H%M%S') + '.CHdMap.fits')
+		CH_map_path = os.path.join(maps_directory, date.strftime('%Y%m%d_%H%M%S') + '.CHMap.fits')
 		
 		# We run the get_CH_map program
 		logging.debug('Running get_CH_map job:\n%s', ' '.join(get_CH_map.get_command(segmented_map_path, *file_paths, output = CH_map_path)))
@@ -144,6 +152,3 @@ if __name__ == '__main__':
 			break
 		else:
 			logging.info('get_CH_map job on files "%s" ran without errors', segmented_map_path)
-		
-		# We update the start_date for the next run
-		start_date += run_frequency
