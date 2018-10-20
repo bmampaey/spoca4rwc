@@ -12,7 +12,7 @@ from AIA_quality import get_quality, get_quality_errors
 classification_exec = '/home/rwceventdb/SPoCA/bin/classification.x'
 
 # Path to the classification program config file
-classification_config_file = '/home/rwceventdb/scripts/AIA_CH.classification.config'
+classification_config_file = '/home/rwceventdb/scripts/AIA_CH_classification.config'
 
 # Path to the centers file
 classification_centers_file = '/home/rwceventdb/CH_maps/centers.txt'
@@ -24,13 +24,13 @@ classification_run_frequency = timedelta(hours = 4)
 get_CH_map_exec = '/home/rwceventdb/SPoCA/bin/get_CH_map.x'
 
 # Path to the get_CH_map program config file
-get_CH_map_config_file = '/home/rwceventdb/scripts/AIA_CH.get_CH_map.config'
+get_CH_map_config_file = '/home/rwceventdb/scripts/AIA_CH_get_CH_map.config'
 
 # Path to the tracking program
 tracking_exec = '/home/rwceventdb/SPoCA/bin/tracking.x'
 
 # Path to the tracking program config file
-tracking_config_file = '/home/rwceventdb/scripts/AIA_CH.tracking.config'
+tracking_config_file = '/home/rwceventdb/scripts/AIA_CH_tracking.config'
 
 # The minimum number of files that overlaps with the previous tracking (see maxDeltaT)
 tracking_overlap = 6
@@ -54,7 +54,7 @@ wavelengths = [193]
 max_delay = timedelta(days = 16)
 
 # Default path for the log file
-log_file =  '/home/rwceventdb/log/AIA_CH.run_spoca_jobs.log'
+log_file =  '/home/rwceventdb/log/AIA_CH_run_spoca_jobs.log'
 
 def date_range(start, end, step):
 	'''Equivalent to range for date'''

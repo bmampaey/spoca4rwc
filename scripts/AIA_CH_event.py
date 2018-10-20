@@ -5,10 +5,10 @@ from astropy.io import fits
 from sunpy.map import Map
 from sunpy.coordinates import frames
 
-from AIA_CH_schema import CoronalHole, CoronalHoleDetection
+from CH_schema import CoronalHole, CoronalHoleDetection
 
 # Default path for the log file
-log_file =  '/home/rwceventdb/log/AIA_CH.get_event.log'
+log_file =  '/home/rwceventdb/log/AIA_CH_get_event.log'
 
 # The CH map HDU that contains the image
 image_hdu = 'CoronalHoleMap'
@@ -22,6 +22,9 @@ chaincode_hdu = 'ChainCodes'
 # The CH map HDU that contains the region stats
 region_stats_hdu = 'AIA_193_CoronalHoleStats'
 
+def get_coronal_hole(map, region):
+	
+	coronal_hole = CoronalHole(Provider = CoronalHole._Provider_enum['+Provider_KSO'])
 
 # Start point of the script
 if __name__ == '__main__':
@@ -52,11 +55,4 @@ if __name__ == '__main__':
 		map = Map(image.data, image.header)
 		
 		for region in regions:
-			coronal_hole_detection = CoronalHoleDetection(Provider = CoronalHole._Provider_enum['+Provider_KSO'])
-
-
-
-aia_file_name = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/0193/2010/05/20/AIA.20100520_005954.0193.image_lev1_prepped.fits'
-CH_map_file_name = 'CH_maps/20100520_000000.CHMap.fits'
-c = ch_map.pixel_to_world(2048.5 * pixel, 2048.5 * pixel)
-c.transform_to(frames.HeliographicStonyhurst)
+			
