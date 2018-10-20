@@ -41,7 +41,7 @@ class Job:
 		# Add args
 		command.extend(merged_args)
 		
-		return command
+		return [str(c) for c in command]
 	
 	def __call__(self, *args, input = None, **kwargs):
 		'''Run the program'''

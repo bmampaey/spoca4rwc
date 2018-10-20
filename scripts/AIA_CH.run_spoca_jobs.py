@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import math
 import subprocess
 import logging
 import argparse
@@ -37,7 +36,7 @@ tracking_config_file = '/home/rwceventdb/scripts/AIA_CH.tracking.config'
 tracking_overlap = 6
 
 # The number of CH maps to run the tracking program on (should be at least tracking_overlap + 1)
-tracking_run_count = max(2, math.ceil(mathtracking_max_time / classification_run_frequency * 2))
+tracking_run_count = tracking_overlap * 2
 
 # Directory to output the maps
 maps_directory = '/home/rwceventdb/CH_maps/'
@@ -74,6 +73,7 @@ if __name__ == '__main__':
 	parser.add_argument('--log_file', '-l', default = log_file, help = 'The file path of the log file')
 	parser.add_argument('--start_date', '-s', default = '2010-05-20', help = 'Start date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--end_date', '-e', help = 'End date of AIA files to process, in form YYYY-MM-DD')
+	
 	args = parser.parse_args()
 	
 	# Setup the logging
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 	end_date = datetime.strptime(args.end_date, '%Y-%m-%d') if args.end_date else datetime.utcnow()
 	
 	# Find the CH maps already created
-	CH_maps = sorted(glob(os.path.join(maps_directory, '*' + '.CHMap.fits')))
+	CH_maps = sorted(glob(os.path.join(maps_directory, '*' + '.CHMap.fits')))[-2 * tracking_overlap:]
 	
 	# Start the loop
 	for date in date_range(start_date, end_date, classification_run_frequency):
@@ -167,15 +167,17 @@ if __name__ == '__main__':
 		
 		# If we have enough CH maps, we run the tracking program
 		if len(CH_maps) >= tracking_run_count:
-			logging.debug('Running tracking job:\n%s', ' '.join(tracking.get_command(CH_maps)))
-			return_code, output, error = tracking(CH_maps)
+			logging.debug('Running tracking job:\n%s', ' '.join(tracking.get_command(*CH_maps)))
+			return_code, output, error = tracking(*CH_maps)
 			
 			# We check if the program ran succesfully
 			if return_code != 0:
 				logging.error('tracking job on files "%s" ran with error\nReturn code: %s\nOutput: %s\nError: %s', ' '.join(CH_maps), return_code, output, error)
 				break
 			else:
-				logging.info('tracking job on files "%s" ran without errors (%s)', ' '.join(CH_maps), output)
+				logging.info('tracking job on files "%s" ran without errors\n%s', ' '.join(CH_maps), output)
 			
 			# Keep only the CH maps needed for the overlap
 			CH_maps = CH_maps[-tracking_overlap:]
+		else:
+			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_run_count, len(CH_maps))
