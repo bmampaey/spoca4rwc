@@ -1,7 +1,5 @@
 #!/usr/bin/env/python
 
-import enum
-
 class _SolarSurface_Area:
 
     _types_map = {
@@ -19,10 +17,10 @@ class _SolarSurface_Area:
             , SH=None
             , error=None
             ):
-        self.__Mm = Mm
-        self.__Arcsec = Arcsec
-        self.__SH = SH
-        self.__error = error
+        self.Mm = Mm
+        self.Arcsec = Arcsec
+        self.SH = SH
+        self.error = error
     
     def _get_Mm(self):
         return self.__Mm
@@ -70,7 +68,7 @@ class _SolarSurface_Area:
 
 class FT__SolarSurface_Area:
 
-    _event_type_enum = enum.Enum('_event_type_enum', '_SolarSurface_Area', module=__name__)
+    _event_type_enum = ['_SolarSurface_Area', ]
     _types_map = {
         'data': {'type': _SolarSurface_Area, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -84,9 +82,9 @@ class FT__SolarSurface_Area:
             , name=None
             , event_type='_SolarSurface_Area'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -109,7 +107,7 @@ class FT__SolarSurface_Area:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -127,7 +125,7 @@ class FT__SolarSurface_Area:
 
 class CoronalHole:
 
-    _Provider_enum = enum.Enum('_Provider_enum', '+Provider_Catania +Provider_NOAA +Provider_USET +Provider_UKMO +Provider_KSO', module=__name__)
+    _Provider_enum = ['+Provider_Catania', '+Provider_NOAA', '+Provider_USET', '+Provider_UKMO', '+Provider_KSO', ]
     _types_map = {
         'Polarity': {'type': str, 'subtype': None},
         'Detections': {'type': list, 'subtype': None},
@@ -148,11 +146,11 @@ class CoronalHole:
             , BeginTime=None
             , Provider=None
             ):
-        self.__Polarity = Polarity
-        self.__Detections = Detections
-        self.__EndTime = EndTime
-        self.__BeginTime = BeginTime
-        self.__Provider = Provider
+        self.Polarity = Polarity
+        self.Detections = Detections
+        self.EndTime = EndTime
+        self.BeginTime = BeginTime
+        self.Provider = Provider
     
     def _get_Polarity(self):
         return self.__Polarity
@@ -191,7 +189,7 @@ class CoronalHole:
     def _set_Provider(self, value):
         if not isinstance(value, str):
             raise TypeError("Provider must be str")
-        if value in self._Provider_enum.__members__:
+        if value in self._Provider_enum:
             self.__Provider = value
         else:
             raise ValueError("Value {} not in _Provider_enum list".format(value))
@@ -213,7 +211,7 @@ class CoronalHole:
 
 class FT_CoronalHole:
 
-    _event_type_enum = enum.Enum('_event_type_enum', 'CoronalHole', module=__name__)
+    _event_type_enum = ['CoronalHole', ]
     _types_map = {
         'data': {'type': CoronalHole, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -227,9 +225,9 @@ class FT_CoronalHole:
             , name=None
             , event_type='CoronalHole'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -252,7 +250,7 @@ class FT_CoronalHole:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -281,8 +279,8 @@ class _HeliographicCoordinate_Stonyhurst:
             , Latitude=None
             , Longitude=None
             ):
-        self.__Latitude = Latitude
-        self.__Longitude = Longitude
+        self.Latitude = Latitude
+        self.Longitude = Longitude
     
     def _get_Latitude(self):
         return self.__Latitude
@@ -310,7 +308,7 @@ class _HeliographicCoordinate_Stonyhurst:
 
 class FT__HeliographicCoordinate_Stonyhurst:
 
-    _event_type_enum = enum.Enum('_event_type_enum', '_HeliographicCoordinate_Stonyhurst', module=__name__)
+    _event_type_enum = ['_HeliographicCoordinate_Stonyhurst', ]
     _types_map = {
         'data': {'type': _HeliographicCoordinate_Stonyhurst, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -324,9 +322,9 @@ class FT__HeliographicCoordinate_Stonyhurst:
             , name=None
             , event_type='_HeliographicCoordinate_Stonyhurst'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -349,7 +347,7 @@ class FT__HeliographicCoordinate_Stonyhurst:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -378,8 +376,8 @@ class _HeliographicCoordinate_Carrington:
             , Latitude=None
             , Longitude=None
             ):
-        self.__Latitude = Latitude
-        self.__Longitude = Longitude
+        self.Latitude = Latitude
+        self.Longitude = Longitude
     
     def _get_Latitude(self):
         return self.__Latitude
@@ -407,7 +405,7 @@ class _HeliographicCoordinate_Carrington:
 
 class FT__HeliographicCoordinate_Carrington:
 
-    _event_type_enum = enum.Enum('_event_type_enum', '_HeliographicCoordinate_Carrington', module=__name__)
+    _event_type_enum = ['_HeliographicCoordinate_Carrington', ]
     _types_map = {
         'data': {'type': _HeliographicCoordinate_Carrington, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -421,9 +419,9 @@ class FT__HeliographicCoordinate_Carrington:
             , name=None
             , event_type='_HeliographicCoordinate_Carrington'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -446,7 +444,7 @@ class FT__HeliographicCoordinate_Carrington:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -478,9 +476,9 @@ class _HeliographicCoordinate:
             , Stonyhurst=None
             , Time=None
             ):
-        self.__Carrington = Carrington
-        self.__Stonyhurst = Stonyhurst
-        self.__Time = Time
+        self.Carrington = Carrington
+        self.Stonyhurst = Stonyhurst
+        self.Time = Time
     
     def _get_Carrington(self):
         return self.__Carrington
@@ -518,7 +516,7 @@ class _HeliographicCoordinate:
 
 class FT__HeliographicCoordinate:
 
-    _event_type_enum = enum.Enum('_event_type_enum', '_HeliographicCoordinate', module=__name__)
+    _event_type_enum = ['_HeliographicCoordinate', ]
     _types_map = {
         'data': {'type': _HeliographicCoordinate, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -532,9 +530,9 @@ class FT__HeliographicCoordinate:
             , name=None
             , event_type='_HeliographicCoordinate'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -557,7 +555,7 @@ class FT__HeliographicCoordinate:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -590,10 +588,10 @@ class _SolarSurface_BoundingBox:
             , LongitudeE=None
             , LatitudeN=None
             ):
-        self.__LongitudeW = LongitudeW
-        self.__LatitudeS = LatitudeS
-        self.__LongitudeE = LongitudeE
-        self.__LatitudeN = LatitudeN
+        self.LongitudeW = LongitudeW
+        self.LatitudeS = LatitudeS
+        self.LongitudeE = LongitudeE
+        self.LatitudeN = LatitudeN
     
     def _get_LongitudeW(self):
         return self.__LongitudeW
@@ -641,7 +639,7 @@ class _SolarSurface_BoundingBox:
 
 class FT__SolarSurface_BoundingBox:
 
-    _event_type_enum = enum.Enum('_event_type_enum', '_SolarSurface_BoundingBox', module=__name__)
+    _event_type_enum = ['_SolarSurface_BoundingBox', ]
     _types_map = {
         'data': {'type': _SolarSurface_BoundingBox, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -655,9 +653,9 @@ class FT__SolarSurface_BoundingBox:
             , name=None
             , event_type='_SolarSurface_BoundingBox'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -680,7 +678,7 @@ class FT__SolarSurface_BoundingBox:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -726,16 +724,16 @@ class SPOCA_CoronalHole:
             , Kurtosis=None
             , Mean=None
             ):
-        self.__Skewness = Skewness
-        self.__Min = Min
-        self.__Max = Max
-        self.__Median = Median
-        self.__ThirdQuartile = ThirdQuartile
-        self.__FirstQuartile = FirstQuartile
-        self.__Var = Var
-        self.__DetectionTime = DetectionTime
-        self.__Kurtosis = Kurtosis
-        self.__Mean = Mean
+        self.Skewness = Skewness
+        self.Min = Min
+        self.Max = Max
+        self.Median = Median
+        self.ThirdQuartile = ThirdQuartile
+        self.FirstQuartile = FirstQuartile
+        self.Var = Var
+        self.DetectionTime = DetectionTime
+        self.Kurtosis = Kurtosis
+        self.Mean = Mean
     
     def _get_Skewness(self):
         return self.__Skewness
@@ -861,7 +859,7 @@ class SPOCA_CoronalHole:
 
 class FT_SPOCA_CoronalHole:
 
-    _event_type_enum = enum.Enum('_event_type_enum', 'SPOCA_CoronalHole', module=__name__)
+    _event_type_enum = ['SPOCA_CoronalHole', ]
     _types_map = {
         'data': {'type': SPOCA_CoronalHole, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -875,9 +873,9 @@ class FT_SPOCA_CoronalHole:
             , name=None
             , event_type='SPOCA_CoronalHole'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -900,7 +898,7 @@ class FT_SPOCA_CoronalHole:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -918,7 +916,7 @@ class FT_SPOCA_CoronalHole:
 
 class CoronalHoleDetection:
 
-    _Provider_enum = enum.Enum('_Provider_enum', '+Provider_Catania +Provider_NOAA +Provider_USET +Provider_UKMO +Provider_KSO', module=__name__)
+    _Provider_enum = ['+Provider_Catania', '+Provider_NOAA', '+Provider_USET', '+Provider_UKMO', '+Provider_KSO', ]
     _types_map = {
         'Area': {'type': FT__SolarSurface_Area, 'subtype': None},
         'CoronalHole': {'type': list, 'subtype': None},
@@ -938,12 +936,12 @@ class CoronalHoleDetection:
             , BoundingBox=None
             , Contour=None
             ):
-        self.__Area = Area
-        self.__CoronalHole = CoronalHole
-        self.__Location = Location
-        self.__Provider = Provider
-        self.__BoundingBox = BoundingBox
-        self.__Contour = Contour
+        self.Area = Area
+        self.CoronalHole = CoronalHole
+        self.Location = Location
+        self.Provider = Provider
+        self.BoundingBox = BoundingBox
+        self.Contour = Contour
     
     def _get_Area(self):
         return self.__Area
@@ -974,7 +972,7 @@ class CoronalHoleDetection:
     def _set_Provider(self, value):
         if not isinstance(value, str):
             raise TypeError("Provider must be str")
-        if value in self._Provider_enum.__members__:
+        if value in self._Provider_enum:
             self.__Provider = value
         else:
             raise ValueError("Value {} not in _Provider_enum list".format(value))
@@ -1014,7 +1012,7 @@ class CoronalHoleDetection:
 
 class FT_CoronalHoleDetection:
 
-    _event_type_enum = enum.Enum('_event_type_enum', 'CoronalHoleDetection', module=__name__)
+    _event_type_enum = ['CoronalHoleDetection', ]
     _types_map = {
         'data': {'type': CoronalHoleDetection, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -1028,9 +1026,9 @@ class FT_CoronalHoleDetection:
             , name=None
             , event_type='CoronalHoleDetection'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -1053,7 +1051,7 @@ class FT_CoronalHoleDetection:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -1082,8 +1080,8 @@ class _CoronalHoleDetection__SPOCA_CoronalHole_:
             , SPOCA_CoronalHole=None
             , CoronalHoleDetection=None
             ):
-        self.__SPOCA_CoronalHole = SPOCA_CoronalHole
-        self.__CoronalHoleDetection = CoronalHoleDetection
+        self.SPOCA_CoronalHole = SPOCA_CoronalHole
+        self.CoronalHoleDetection = CoronalHoleDetection
     
     def _get_SPOCA_CoronalHole(self):
         return self.__SPOCA_CoronalHole
@@ -1111,7 +1109,7 @@ class _CoronalHoleDetection__SPOCA_CoronalHole_:
 
 class FT__CoronalHoleDetection__SPOCA_CoronalHole_:
 
-    _event_type_enum = enum.Enum('_event_type_enum', '_CoronalHoleDetection__SPOCA_CoronalHole', module=__name__)
+    _event_type_enum = ['_CoronalHoleDetection__SPOCA_CoronalHole_', ]
     _types_map = {
         'data': {'type': _CoronalHoleDetection__SPOCA_CoronalHole_, 'subtype': None},
         'name': {'type': str, 'subtype': None},
@@ -1125,9 +1123,9 @@ class FT__CoronalHoleDetection__SPOCA_CoronalHole_:
             , name=None
             , event_type='_CoronalHoleDetection__SPOCA_CoronalHole_'
             ):
-        self.__data = data
-        self.__name = name
-        self.__event_type = event_type
+        self.data = data
+        self.name = name
+        self.event_type = event_type
     
     def _get_data(self):
         return self.__data
@@ -1150,7 +1148,7 @@ class FT__CoronalHoleDetection__SPOCA_CoronalHole_:
     def _set_event_type(self, value):
         if not isinstance(value, str):
             raise TypeError("event_type must be str")
-        if value in self._event_type_enum.__members__:
+        if value in self._event_type_enum:
             self.__event_type = value
         else:
             raise ValueError("Value {} not in _event_type_enum list".format(value))
@@ -1173,7 +1171,8 @@ class RootObject:
     _formats_map = {
     }
 
-    def __init__(self):
+    def __init__(self
+            ):
         pass
     
     def as_dict(self):
