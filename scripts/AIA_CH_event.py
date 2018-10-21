@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import logging
 import argparse
 from astropy.units import pixel
@@ -24,15 +25,15 @@ region_stats_hdu_name = 'AIA_193_CoronalHoleStats'
 
 def pixel_to_stonyhurst(map, x, y):
 	'''Convert pixel coordinates to Stonyhurst coordinates'''
-	pixel = map.pixel_to_world(x * pixel, y * pixel)
-	stonyhurst = pixel.transform_to(frames.HeliographicStonyhurst)
-	return stonyhurst.lat, stonyhurst.lon
+	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
+	return stonyhurst.lat.degree, stonyhurst.lon.degree
 
 def pixel_to_carrington(map, x, y):
 	'''Convert pixel coordinates to Carrington coordinates'''
-	pixel = map.pixel_to_world(x * pixel, y * pixel)
-	carrington = pixel.transform_to(frames.HeliographicCarrington)
-	return carrington.lat, carrington.lon
+	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+	carrington = world.transform_to(frames.HeliographicCarrington)
+	return carrington.lat.degree, carrington.lon.degree
 
 def get_coronal_hole_detection(map, region, region_stat, chaincode):
 	latitude, longitude = pixel_to_stonyhurst(map, region_stat['XCENTER'], region_stat['YCENTER'])
@@ -53,18 +54,20 @@ def get_coronal_hole_detection(map, region, region_stat, chaincode):
 		Time = region['DATE_OBS'],
 	)
 	
+	latitude_s, longitude_w = pixel_to_stonyhurst(map, region['XBOXMIN'], region['YBOXMIN'])
+	latitude_n, longitude_e = pixel_to_stonyhurst(map, region['XBOXMAX'], region['YBOXMAX'])
 	bounding_box = _SolarSurface_BoundingBox(
-		LatitudeS = None,
-		LongitudeE = None,
-		LatitudeN = None,
-		LongitudeW = None,
+		LatitudeS = latitude_s,
+		LongitudeE = longitude_e,
+		LatitudeN = latitude_n,
+		LongitudeW = longitude_w,
 	)
 	
 	area = _SolarSurface_Area(
-		Mm = region_stat['AREA_ATDISKCENTER'],
+		Mm = float(region_stat['AREA_ATDISKCENTER']),
 		SH = None,
 		Arcsec = None,
-		error = region_stat['AREA_ATDISKCENTER_UNCERTAINITY'],
+		error = float(region_stat['AREA_ATDISKCENTER_UNCERTAINITY']),
 	)
 	
 	contour = list()
@@ -78,30 +81,31 @@ def get_coronal_hole_detection(map, region, region_stat, chaincode):
 				Longitude = longitude,
 			)
 			contour.append(stonyhurst)
-	
+	import ipdb; ipdb.set_trace()
 	coronal_hole_detection = CoronalHoleDetection(
 		Location = location,
 		CoronalHole = None,
 		BoundingBox = bounding_box,
 		Area = area,
 		Contour = contour,
-		Provider = CoronalHoleDetection._Provider_enum['+Provider_KSO'],
+		Provider = '+Provider_KSO',
+		#Provider = CoronalHoleDetection._Provider_enum['+Provider_KSO'],
 	)
 	
 	return coronal_hole_detection
 
 def get_spoca_coronal_hole(region_stat):
 	spoca_coronal_hole = SPOCA_CoronalHole(
-		Min = region_stat['MIN_INTENSITY'],
-		FirstQuartile =  region_stat['LOWERQUARTILE_INTENSITY'],
-		Var =  region_stat['VARIANCE'],
-		Max =  region_stat['MAX_INTENSITY'],
-		Mean =  region_stat['MEAN_INTENSITY'],
-		Skewness =  region_stat['SKEWNESS'],
-		Kurtosis =  region_stat['KURTOSIS'],
-		Median =  region_stat['MEDIAN_INTENSITY'],
-		ThirdQuartile =  region_stat['UPPERQUARTILE_INTENSITY'],
-		DetectionTime =  region_stat['DATE_OBS'],
+		Min = float(region_stat['MIN_INTENSITY']),
+		FirstQuartile =  float(region_stat['LOWERQUARTILE_INTENSITY']),
+		Var =  float(region_stat['VARIANCE']),
+		Max =  float(region_stat['MAX_INTENSITY']),
+		Mean =  float(region_stat['MEAN_INTENSITY']),
+		Skewness =  float(region_stat['SKEWNESS']),
+		Kurtosis =  float(region_stat['KURTOSIS']),
+		Median =  float(region_stat['MEDIAN_INTENSITY']),
+		ThirdQuartile =  float(region_stat['UPPERQUARTILE_INTENSITY']),
+		DetectionTime =  float(region_stat['DATE_OBS']),
 	)
 	
 	return spoca_coronal_hole
@@ -124,6 +128,7 @@ if __name__ == '__main__':
 		logging.basicConfig(level = logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
 	
 	for map_path in args.maps:
+		# Parse the FITS file HDUs
 		hdus = fits.open(map_path)
 		image_hdu = hdus[image_hdu_name]
 		regions_hdu = hdus[region_hdu_name]
@@ -140,3 +145,4 @@ if __name__ == '__main__':
 		
 		for id, region in regions.items():
 			coronal_hole_detection = get_coronal_hole_detection(map, region, region_stats[id], chaincodes[id])
+			spoca_coronal_hole = get_spoca_coronal_hole(region_stat)
