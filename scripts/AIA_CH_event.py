@@ -11,16 +11,16 @@ from CH_schema import CoronalHoleDetection, _HeliographicCoordinate, _Heliograph
 # Default path for the log file
 log_file =  '/home/rwceventdb/log/AIA_CH_get_event.log'
 
-# The CH map HDU that contains the image
+# The map HDU that contains the image
 image_hdu_name = 'CoronalHoleMap'
 
-# The CH map HDU that contains the regions
+# The map HDU that contains the regions
 region_hdu_name = 'Regions'
 
-# The CH map HDU that contains the chaincodes
+# The map HDU that contains the chaincodes
 chaincode_hdu_name = 'ChainCodes'
 
-# The CH map HDU that contains the region stats
+# The map HDU that contains the region stats
 region_stats_hdu_name = 'AIA_193_CoronalHoleStats'
 
 def pixel_to_stonyhurst(map, x, y):
@@ -110,6 +110,27 @@ def get_spoca_coronal_hole(region_stat):
 	
 	return spoca_coronal_hole
 
+def parse_CH_map(map_path):
+	# Read the FITS file HDUs
+	hdus = fits.open(map_path)
+	image_hdu = hdus[image_hdu_name]
+	regions_hdu = hdus[region_hdu_name]
+	chaincodes_hdu = hdus[chaincode_hdu_name]
+	region_stats_hdu = hdus[region_stats_hdu_name]
+	
+	# Create a sunpy Map for converting the pixel coordinates
+	map = Map(image_hdu.data, image_hdu.header)
+	
+	# Get the data of the regions by id
+	regions = {region['ID']: region for region in regions_hdu.data}
+	region_stats = {region_stat['ID']: region_stat for region_stat in region_stats_hdu.data}
+	chaincodes = {id: (chaincodes_hdu.data['X%07d' % id], chaincodes_hdu.data['Y%07d' % id]) for id in regions_hdu.data['ID']}
+	
+	for id, region in regions.items():
+		coronal_hole_detection = get_coronal_hole_detection(map, region, region_stats[id], chaincodes[id])
+		spoca_coronal_hole = get_spoca_coronal_hole(region_stat)
+
+
 # Start point of the script
 if __name__ == '__main__':
 	
@@ -117,7 +138,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description = 'Extract the regions from a CH map and create corresponding events')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
 	parser.add_argument('--log_file', '-l', default = log_file, help = 'The file path of the log file')
-	parser.add_argument('maps', metavar = 'MAP', nargs='+', help = 'The path to a SPoCA map')
+	parser.add_argument('maps', metavar = 'MAP', nargs='+', help = 'The path to a SPoCA CH map')
 	
 	args = parser.parse_args()
 	
@@ -128,21 +149,5 @@ if __name__ == '__main__':
 		logging.basicConfig(level = logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
 	
 	for map_path in args.maps:
-		# Parse the FITS file HDUs
-		hdus = fits.open(map_path)
-		image_hdu = hdus[image_hdu_name]
-		regions_hdu = hdus[region_hdu_name]
-		chaincodes_hdu = hdus[chaincode_hdu_name]
-		region_stats_hdu = hdus[region_stats_hdu_name]
+		parse_CH_map(map_path)
 		
-		# Create a sunpy Map for converting the pixel coordinates
-		map = Map(image_hdu.data, image_hdu.header)
-		
-		# Get the data of the regions
-		regions = {region['ID']: region for region in regions_hdu.data}
-		region_stats = {region_stat['ID']: region_stat for region_stat in region_stats_hdu.data}
-		chaincodes = {id: (chaincodes_hdu.data['X%07d' % id], chaincodes_hdu.data['Y%07d' % id]) for id in regions_hdu.data['ID']}
-		
-		for id, region in regions.items():
-			coronal_hole_detection = get_coronal_hole_detection(map, region, region_stats[id], chaincodes[id])
-			spoca_coronal_hole = get_spoca_coronal_hole(region_stat)

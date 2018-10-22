@@ -110,4 +110,5 @@ venv.bak/
 logrotate.state
 python
 SPoCA
-
+sunpy
+jsonschema2popo
