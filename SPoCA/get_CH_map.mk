@@ -3,8 +3,8 @@ TRACKINGLFLAGS=-lpthread
 IDLLFLAGS=-L /usr/local/idl/idl706/bin/bin.linux.x86_64 -lpthread -lidl -lXp -lXpm -lXmu -lXext -lXt -lSM -lICE  -lXinerama -lX11 -ldl -ltermcap -lrt -lm /usr/lib/libXm.a
 MAGICKLFLAGS=`Magick++-config --ldflags --libs`
 MAGICKCFLAGS=`Magick++-config --cppflags`
-CFLAGS=-Wall -fkeep-inline-functions -g -O3
-LFLAGS=-lcfitsio
+CFLAGS=-Wall -fkeep-inline-functions -g -O3  -I /home/rwceventdb/cfitsio/include
+LFLAGS=-L /home/rwceventdb/cfitsio/lib -lcfitsio
 DFLAGS=
 
 all:bin/get_CH_map.x
@@ -80,8 +80,8 @@ objects/FeatureVector.o : get_CH_map.mk classes/FeatureVector.cpp classes/consta
 objects/tools.o : get_CH_map.mk classes/tools.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/tools.cpp -o objects/tools.o
 
-objects : 
+objects :
 	 mkdir -p objects
 
-bin : 
+bin :
 	 mkdir -p bin
