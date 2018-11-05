@@ -1,0 +1,107 @@
+{
+    "data": {
+        "CoronalHoles": [
+            {
+                "data": {
+                    "Statistics": [
+                        {
+                            "data": {
+                                "ThirdQuartile": 42.0, 
+                                "Skewness": 42.0, 
+                                "Min": 42.0, 
+                                "ImageChannel": "sample text", 
+                                "Max": 42.0, 
+                                "FirstQuartile": 42.0, 
+                                "Median": 42.0, 
+                                "PixelsNumber": 42.0, 
+                                "Var": 42.0, 
+                                "Kurtosis": 42.0, 
+                                "Mean": 42.0
+                            }, 
+                            "event_type": "SPOCA_CoronalHoleDetectionStatistics"
+                        }
+                    ], 
+                    "AreaError": 42.0, 
+                    "Area": 42.0, 
+                    "Location": {
+                        "data": {
+                            "Carrington": {
+                                "data": {
+                                    "Latitude": 44, 
+                                    "Longitude": 44
+                                }, 
+                                "event_type": "_HeliographicCoordinate_Carrington"
+                            }, 
+                            "Stonyhurst": {
+                                "data": {
+                                    "Latitude": 20, 
+                                    "Longitude": 20
+                                }, 
+                                "event_type": "_HeliographicCoordinate_Stonyhurst"
+                            }, 
+                            "Time": "2013-12-12T13:13:13"
+                        }, 
+                        "event_type": "_HeliographicCoordinate"
+                    }, 
+                    "BoundingBox": {
+                        "data": {
+                            "StonyhurstNE": {
+                                "data": {
+                                    "Latitude": 20, 
+                                    "Longitude": 20
+                                }, 
+                                "event_type": "_HeliographicCoordinate_Stonyhurst"
+                            }, 
+                            "CarringtonNE": {
+                                "data": {
+                                    "Latitude": 44, 
+                                    "Longitude": 44
+                                }, 
+                                "event_type": "_HeliographicCoordinate_Carrington"
+                            }, 
+                            "CarringtonSW": {
+                                "data": {
+                                    "Latitude": 44, 
+                                    "Longitude": 44
+                                }, 
+                                "event_type": "_HeliographicCoordinate_Carrington"
+                            }, 
+                            "StonyhurstSW": {
+                                "data": {
+                                    "Latitude": 20, 
+                                    "Longitude": 20
+                                }, 
+                                "event_type": "_HeliographicCoordinate_Stonyhurst"
+                            }
+                        }, 
+                        "event_type": "_SolarSurface_BoundingBox"
+                    }, 
+                    "DetectionTime": "2013-12-12T13:13:13", 
+                    "Contour": [
+                        {
+                            "data": {
+                                "Latitude": 20, 
+                                "Longitude": 20
+                            }, 
+                            "event_type": "_HeliographicCoordinate_Stonyhurst"
+                        }
+                    ]
+                }, 
+                "event_type": "SPOCA_CoronalHoleDetection"
+            }
+        ], 
+        "DetectionTime": "2013-12-12T13:13:13", 
+        "ObservationTime": "2013-12-12T13:13:13"
+    }, 
+    "event_type": "SPOCA_CoronalHoleDetectionTime"
+}
+
+
+{
+    "data": {
+        "Detections": [], 
+        "EndTime": "2013-12-12T13:13:13", 
+        "BeginTime": "2013-12-12T13:13:13"
+    }, 
+    "event_type": "SPOCA_CoronalHole"
+}
