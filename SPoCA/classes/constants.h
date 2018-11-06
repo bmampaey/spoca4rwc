@@ -27,7 +27,7 @@ See constants.h for the actual values.
 <BR>Acceptable values are float or double (gives better precision, but increase computation time)
 */
 #if ! defined(Real)
-#define Real float
+#define Real double
 #endif
 
 /*!
