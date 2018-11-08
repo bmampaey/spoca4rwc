@@ -53,8 +53,6 @@ wavelengths = [193]
 # The max time that must be waited before processing data
 max_delay = timedelta(days = 16)
 
-# Default path for the log file
-log_file =  '/home/rwceventdb/log/AIA_CH_run_spoca_jobs.log'
 
 def date_range(start, end, step):
 	'''Equivalent to range for date'''
@@ -70,17 +68,17 @@ if __name__ == '__main__':
 	# Get the arguments
 	parser = argparse.ArgumentParser(description = 'Run SPoCA to extract CH maps from AIA 193A fits files')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
-	parser.add_argument('--log_file', '-l', default = log_file, help = 'The file path of the log file')
+	parser.add_argument('--log_file', '-l', help = 'The file path of the log file')
 	parser.add_argument('--start_date', '-s', default = '2010-05-20', help = 'Start date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--end_date', '-e', help = 'End date of AIA files to process, in form YYYY-MM-DD')
 	
 	args = parser.parse_args()
 	
 	# Setup the logging
-	if args.debug:
-		logging.basicConfig(level = logging.DEBUG, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
+	if args.log_file:
+		logging.basicConfig(level = logging.DEBUG if args.debug else logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
 	else:
-		logging.basicConfig(level = logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
+		logging.basicConfig(level = logging.DEBUG if args.debug else logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s')
 	
 	# Create a classification job with the appropriate parameters
 	classification = Job(classification_exec, config = classification_config_file, centersFile = classification_centers_file)

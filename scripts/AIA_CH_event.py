@@ -113,7 +113,7 @@ def get_spoca_coronal_hole_detection(map, region, region_stat, chaincode, name =
 		'Area': float(region_stat['AREA_ATDISKCENTER']),
 		'Location': get_heliographic_coordinate(map, region_stat['XCENTER'], region_stat['YCENTER'], region['DATE_OBS'] + 'Z'),
 		'BoundingBox': get_solar_surface_bounding_box(map, region['XBOXMIN'], region['YBOXMIN'], region['XBOXMAX'], region['YBOXMAX']),
-		'Contour': [to_heliographic_coordinate_stonyhurst(map, x, y) for x, y in zip(*chaincode) if (x != 0 or y != 0)],
+		'Contour': [get_heliographic_coordinate_stonyhurst(map, x, y) for x, y in zip(*chaincode) if (x != 0 or y != 0)],
 	}
 	
 	return get_event('SPOCA_CoronalHoleDetection', data, name = name)
@@ -241,7 +241,7 @@ if __name__ == '__main__':
 		map_events = get_CHMap_events(map_path)
 		
 		for name, events in map_events.items():
-			import ipdb; ipdb.set_trace()
+			
 			# Update the SPOCA_CoronalHole event with known coronal holes
 			spoca_coronal_holes[name] = update_spoca_coronal_hole(events['spoca_coronal_hole'], spoca_coronal_holes.get(name))
 			
