@@ -55,6 +55,34 @@ class Job:
 	def __str__(self):
 		return ' '.join(self.get_command())
 
+class JobError(Exception):
+	def __init__(self, returncode = None, stdout = None, stderr = None, message = None, job_name = None, **extra):
+		self.returncode = returncode
+		self.stdout = stdout
+		self.stderr = stderr
+		self.message = message
+		self.job_name = job_name
+		self.extra = extra
+	
+	def __str__(self):
+		if self.message is not None:
+			message = self.message.format(returncode = self.returncode, stdout = self.stdout, stderr = self.stderr, job_name = self.job_name, **self.extra)
+		else:
+			if self.job_name:
+				message += 'Job "{job_name}" ran with stderr:'.format(job_name = self.job_name)
+			else:
+				message += 'Job ran with stderr:'
+			if self.returncode is not None:
+				message += '\nReturn code: {returncode}'.format(returncode = self.returncode)
+			if self.stderr:
+				message += '\nError: {stderr}'.format(stderr = self.stderr)
+			if self.stdout:
+				message += '\nOutput: {stdout}'.format(stdout = self.stdout)
+			if self.extra:
+				message += '\nExtra info: {extra}'.format(extra = self.extra)
+		
+		return message
+
 
 # Start point of the script
 if __name__ == '__main__':

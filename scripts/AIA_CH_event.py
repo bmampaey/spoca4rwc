@@ -194,7 +194,7 @@ def get_CHMap_events(map_path):
 	return events
 
 
-def update_spoca_coronal_hole(spoca_coronal_hole1, spoca_coronal_hole2):
+def merge_spoca_coronal_hole(spoca_coronal_hole1, spoca_coronal_hole2):
 	'''Update a SPOCA_CoronalHole event with another SPOCA_CoronalHole event'''
 	if spoca_coronal_hole2:
 		spoca_coronal_hole1['data']['Detections'].extend(spoca_coronal_hole2['data']['Detections'])
@@ -243,7 +243,7 @@ if __name__ == '__main__':
 		for name, events in map_events.items():
 			
 			# Update the SPOCA_CoronalHole event with known coronal holes
-			spoca_coronal_holes[name] = update_spoca_coronal_hole(events['spoca_coronal_hole'], spoca_coronal_holes.get(name))
+			spoca_coronal_holes[name] = merge_spoca_coronal_hole(events['spoca_coronal_hole'], spoca_coronal_holes.get(name))
 			
 			# Write the events to JSON
 			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_detection_statistics'], output_directory = args.output_directory)
