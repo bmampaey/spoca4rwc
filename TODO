@@ -1,2 +1,0 @@
-- When converting from pixel to Heliographic coordinate, check if pixel are +1 or not (for Fits the first pixel is at 1,1)
-check for region + region stats + chaincode
