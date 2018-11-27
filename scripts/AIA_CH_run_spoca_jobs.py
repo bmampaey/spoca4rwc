@@ -17,7 +17,7 @@ classification_exec = '/home/rwceventdb/SPoCA/bin/classification.x'
 classification_config_file = '/home/rwceventdb/scripts/AIA_CH_classification.config'
 
 # Path to the centers file
-classification_centers_file = '/home/rwceventdb/CH_maps/centers.txt'
+classification_centers_file = '/data/RWC/SPoCA/CH_maps/centers.txt'
 
 # The frequency to run the classification program
 classification_run_frequency = timedelta(hours = 4)
@@ -41,13 +41,16 @@ tracking_overlap = 6
 tracking_run_count = 6
 
 # Directory to output the maps
-maps_directory = '/home/rwceventdb/CH_maps/'
+maps_directory = '/data/RWC/SPoCA/CH_maps/'
 
 # Directory to output the stats
-stats_directory = '/home/rwceventdb/CH_stats/'
+events_directory = '/data/RWC/SPoCA/CH_events/'
 
 # Directory where the prepped AIA files are located
 aia_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
+
+# Directory where the prepped HMI files are located
+hmi_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/hmi.m_45s.prepped/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
 
 # Wavelengths for spoca
 wavelengths = [193]
@@ -76,6 +79,21 @@ def get_AIA_files(date, wavelengths):
 				break
 			else:
 				logging.info('Skipping file %s with bad quality: %s', file_path, get_quality_errors(quality))
+	
+	return file_paths
+
+def get_HMI_files(date):
+	# Find the AIA files for the given date and required quality
+	file_paths = list()
+	
+	for file_path in sorted(glob(hmi_file_pattern.format(date=date))):
+		quality = get_quality(file_path)
+		# A quality of 0 means no defect
+		if quality == 0:
+			file_paths.append(file_path)
+			break
+		else:
+			logging.info('Skipping file %s with bad quality: %s', file_path, get_quality_errors(quality))
 	
 	return file_paths
 
@@ -170,19 +188,20 @@ def update_event(event_type, event, merge_events):
 	logging.info('Succesfully submitted event "%s" (%s)', event['name'], result)
 
 
-def submit_events(CH_map):
+def submit_events(CH_map, output_directory = None):
 	
 	# Extract the events from the CH_map
-	map_events = get_CHMap_events(CH_map)
+	run_event, CH_events = get_CHMap_events(CH_map)
 	
-	for name, events in map_events.items():
-		
+	for name, events in CH_events.items():
+		import ipdb; ipdb.set_trace()
 		# Create the SPOCA_CoronalHoleDetection event
 		try:
 			create_event('SPOCA_CoronalHoleDetection', events['spoca_coronal_hole_detection'])
 		except EventDBError as why:
 			logging.error('Failed to submit event "%s": %s', events['spoca_coronal_hole_detection']['name'], why)
-			# If we fail, we must not submit the other events dependent on the SPOCA_CoronalHoleDetection event
+			# If we fail, we must not submit an other event dependent on the SPOCA_CoronalHoleDetection event
+			run_event['data']['detections'].remove(events['spoca_coronal_hole_detection']['name'])
 			continue
 		
 		# Create the SPOCA_CoronalHoleDetectionStatistics events
@@ -197,7 +216,16 @@ def submit_events(CH_map):
 			update_event('SPOCA_CoronalHole', events['spoca_coronal_hole'], merge_events = merge_spoca_coronal_hole)
 		except EventDBError as why:
 			logging.error('Failed to submit event "%s": %s', name, why)
-
+		
+		# Write the events if requested
+		if output_directory is not None:
+			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_detection_statistics'], output_directory = output_directory)
+	
+	# Create the SPOCA_CoronalHoleRun event
+	create_event('SPOCA_CoronalHoleRun', run_event)
+	
+	# Write the event if requested
+	write_events(run_event, output_directory = output_directory)
 
 def main(start_date, end_date):
 	
@@ -227,9 +255,12 @@ def main(start_date, end_date):
 		
 		# Create the Segmented map
 		segmented_map = create_segmented_map(AIA_images, date)
-			
+		
+		# Make the list of HMI images
+		HMI_images = get_HMI_files(date)
+		
 		# Create the CH map
-		CH_map = create_CH_map(segmented_map, date, AIA_images)
+		CH_map = create_CH_map(segmented_map, date, AIA_images + HMI_images)
 		
 		# We add the CH map to the list of CH maps
 		CH_maps.append(CH_map)
@@ -242,11 +273,11 @@ def main(start_date, end_date):
 			CH_maps = CH_maps[-tracking_overlap:]
 			
 			# We submit the events from the CH maps
-			for CH_map in CH_maps:
-				submit_events(CH_map)
+			#for CH_map in CH_maps:
+			#	submit_events(CH_map, output_directory = os.path.join(events_directory, date.strftime('%Y%m%d_%H%M%S'))
 			
 		else:
-			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_run_count, len(CH_maps))
+			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_overlap + tracking_run_count, len(CH_maps))
 
 # Start point of the script
 if __name__ == '__main__':

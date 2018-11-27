@@ -3,7 +3,9 @@ import logging
 import argparse
 import json
 import os
-from astropy.units import pixel
+import math
+from datetime import datetime
+from astropy.units import pixel, km
 from astropy.io import fits
 from sunpy.map import Map
 from sunpy.coordinates import frames
@@ -18,7 +20,10 @@ region_hdu_name = 'Regions'
 chaincode_hdu_name = 'ChainCodes'
 
 # The map HDUs that contains the region stats
-region_stats_hdu_names = ['AIA_193_CoronalHoleStats']
+region_stats_hdu_names = ['AIA_193_CoronalHoleStats', 'HMI_MAGNETOGRAM_CoronalHoleStats']
+
+# The SPoCA version
+spoca_version = '1'
 
 
 def get_event(event_type, data, name = None):
@@ -34,40 +39,71 @@ def get_event(event_type, data, name = None):
 	return event
 
 
-def to_heliographic_coordinate_stonyhurst(map, x, y):
-	'''Convert pixel coordinates to Stonyhurst coordinates'''
+def pixel_to_heliographic_stonyhurst(map, x, y):
+	'''Convert pixel coordinates to Heliographic Stonyhurst coordinates'''
 	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
 	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
 	
-	return {
-		'Latitude': stonyhurst.lat.degree,
-		'Longitude': stonyhurst.lon.degree,
-	}
+	if math.isfinite(stonyhurst.lat.degree) and math.isfinite(stonyhurst.lon.degree):
+		return {
+			'Latitude': stonyhurst.lat.degree,
+			'Longitude': stonyhurst.lon.degree,
+		}
+	else:
+		raise ValueError('Cannot convert pixel coordinates to Heliographic Stonyhurst coordinates')
 
 
-def to_heliographic_coordinate_carrington(map, x, y):
-	'''Convert pixel coordinates to Carrington coordinates'''
+def pixel_to_heliographic_carrington(map, x, y):
+	'''Convert pixel coordinates to Heliographic Carrington coordinates'''
 	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
 	carrington = world.transform_to(frames.HeliographicCarrington)
 	
-	return {
-		'Latitude': carrington.lat.degree,
-		'Longitude': carrington.lon.degree,
-	}
+	if math.isfinite(carrington.lat.degree) and math.isfinite(carrington.lon.degree):
+		return {
+			'Latitude': carrington.lat.degree,
+			'Longitude': carrington.lon.degree,
+		}
+	else:
+		raise ValueError('Cannot convert pixel coordinates to Heliographic Carrington coordinates')
+
+def pixel_to_heliocentric_earth_equatorial(map, x, y):
+	'''Convert pixel coordinates to Heliocentric Earth Equatorial coordinates'''
+	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+	
+	# SunPy requires to use intermediate heliographic coordinates
+	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
+	
+	heeq = stonyhurst.transform_to(frames.Heliocentric(observer="earth", obstime=map.date))
+	
+	if math.isfinite(heeq.x.value) and math.isfinite(heeq.y.value) and math.isfinite(heeq.z.value):
+		return {
+			'x': heeq.x.to(km).value,
+			'y': heeq.y.to(km).value,
+			'z': heeq.y.to(km).value,
+		}
+	else:
+		raise ValueError('Cannot convert pixel coordinates to Heliocentric Earth Equatorial coordinates')
 
 
 def get_heliographic_coordinate_stonyhurst(map, x, y, name = None):
 	'''Return a _HeliographicCoordinate_Stonyhurst event'''
-	data = to_heliographic_coordinate_stonyhurst(map, x, y)
+	data = pixel_to_heliographic_stonyhurst(map, x, y)
 	
 	return get_event('_HeliographicCoordinate_Stonyhurst', data, name = name)
 
 
 def get_heliographic_coordinate_carrington(map, x, y, name = None):
 	'''Return a _HeliographicCoordinate_Carrington event'''
-	data = to_heliographic_coordinate_carrington(map, x, y)
+	data = pixel_to_heliographic_carrington(map, x, y)
 	
 	return get_event('_HeliographicCoordinate_Carrington', data, name = name)
+
+
+def get_heliocentric_coordinate_heeq(map, x, y, name = None):
+	'''Return a _HeliocentricCoordinate_HEEQ event'''
+	data = pixel_to_heliocentric_earth_equatorial(map, x, y)
+	
+	return get_event('_HeliocentricCoordinate_HEEQ', data, name = name)
 
 
 def get_heliographic_coordinate(map, x, y, time, name = None):
@@ -81,16 +117,15 @@ def get_heliographic_coordinate(map, x, y, time, name = None):
 	return get_event('_HeliographicCoordinate', data, name = name)
 
 
-def get_solar_surface_bounding_box(map, sw_x, sw_y, ne_x, ne_y, name = None):
-	'''Return a _SolarSurface_BoundingBox event'''
+def get_solar_surface_contour(map, x, y, name = None):
+	'''Return a _SolarSurface_Contour event'''
 	data = {
-		'StonyhurstSW': get_heliographic_coordinate_stonyhurst(map, sw_x, sw_y),
-		'StonyhurstNE': get_heliographic_coordinate_stonyhurst(map, ne_x, ne_y),
-		'CarringtonSW': get_heliographic_coordinate_carrington(map, sw_x, sw_y),
-		'CarringtonNE': get_heliographic_coordinate_carrington(map, ne_x, ne_y),
+		'Stonyhurst': get_heliographic_coordinate_stonyhurst(map, x, y),
+		'Carrington': get_heliographic_coordinate_carrington(map, x, y),
+		'HEEQ': get_heliocentric_coordinate_heeq(map, x, y),
 	}
 	
-	return get_event('_SolarSurface_BoundingBox', data, name = name)
+	return get_event('_SolarSurface_Contour', data, name = name)
 
 
 def get_spoca_coronal_hole(spoca_coronal_hole_detection_name, time, name = None):
@@ -107,13 +142,26 @@ def get_spoca_coronal_hole(spoca_coronal_hole_detection_name, time, name = None)
 
 def get_spoca_coronal_hole_detection(map, region, region_stat, chaincode, name = None):
 	'''Return a SPOCA_CoronalHoleDetection event'''
+	
+	# Compute the chain code
+	contour = list()
+	for x, y in zip(*chaincode):
+		# If x and y are both 0 then it is the end of the chaincode
+		if (x == 0 and y == 0):
+			break
+		else:
+			# If we cannot convert some pixel coordinates to sun coordinates, we just skip it
+			try:
+				contour.append(get_solar_surface_contour(map, x, y))
+			except ValueError:
+				pass
+	
 	data = {
 		'DetectionTime': region['DATE_OBS'] + 'Z',
 		'AreaError': float(region_stat['AREA_ATDISKCENTER_UNCERTAINITY']),
 		'Area': float(region_stat['AREA_ATDISKCENTER']),
 		'Location': get_heliographic_coordinate(map, region_stat['XCENTER'], region_stat['YCENTER'], region['DATE_OBS'] + 'Z'),
-		'BoundingBox': get_solar_surface_bounding_box(map, region['XBOXMIN'], region['YBOXMIN'], region['XBOXMAX'], region['YBOXMAX']),
-		'Contour': [get_heliographic_coordinate_stonyhurst(map, x, y) for x, y in zip(*chaincode) if (x != 0 or y != 0)],
+		'Contour': contour,
 	}
 	
 	return get_event('SPOCA_CoronalHoleDetection', data, name = name)
@@ -124,6 +172,7 @@ def get_spoca_coronal_hole_detection_statistics(detection, channel, region_stat,
 	data = {
 		'Detection': detection,
 		'ImageChannel': channel,
+		'ImageTime': region_stat['DATE_OBS'] + 'Z',
 		'Min': float(region_stat['MIN_INTENSITY']),
 		'Max': float(region_stat['MAX_INTENSITY']),
 		'Median': float(region_stat['MEDIAN_INTENSITY']),
@@ -137,6 +186,19 @@ def get_spoca_coronal_hole_detection_statistics(detection, channel, region_stat,
 	}
 	
 	return get_event('SPOCA_CoronalHoleDetectionStatistics', data, name = name)
+
+
+def get_spoca_coronal_hole_run(image_time, detections, run_time = None, version = spoca_version, name = None):
+	'''Return a SPOCA_CoronalHoleRun event'''
+	
+	data = {
+		'RunTime': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ') if run_time is None else run_time,
+		'ImageTime': image_time,
+		'VersionNb': version,
+		'Detections': detections,
+	}
+	
+	return get_event('SPOCA_CoronalHoleRun', data, name = name)
 
 
 def get_CHMap_events(map_path):
@@ -168,30 +230,41 @@ def get_CHMap_events(map_path):
 			region_stat['ID']: region_stat
 			for region_stat in hdus[region_stats_hdu_name].data
 		}
-		for region_stats_hdu_name in region_stats_hdu_names
+		for region_stats_hdu_name in region_stats_hdu_names if region_stats_hdu_name in hdus
 	}
 	
-	# Create the events
-	events = dict()
+	
+	# Create the CH events
+	CH_events = dict()
+	
+	# Keep the list of detections for the SPOCA_CoronalHoleRun event
+	detection_names = list()
 	
 	for id, region in regions.items():
 		
-		new_events = dict()
+		events = dict()
 		
 		spoca_coronal_hole_detection_name = 'SPOCA_CoronalHoleDetection_{date}_{id}'.format(date=region['DATE_OBS'], id=id)
-		new_events['spoca_coronal_hole_detection'] = get_spoca_coronal_hole_detection(map, region, next(iter(region_stats.values()))[id], chaincodes[id], name = spoca_coronal_hole_detection_name)
+		events['spoca_coronal_hole_detection'] = get_spoca_coronal_hole_detection(map, region, next(iter(region_stats.values()))[id], chaincodes[id], name = spoca_coronal_hole_detection_name)
 		
 		spoca_coronal_hole_name = 'SPOCA_CoronalHole_{color}'.format(color=region['TRACKED_COLOR'])
-		new_events['spoca_coronal_hole'] = get_spoca_coronal_hole(spoca_coronal_hole_detection_name, region['DATE_OBS'] + 'Z', name = spoca_coronal_hole_name)
+		events['spoca_coronal_hole'] = get_spoca_coronal_hole(spoca_coronal_hole_detection_name, region['DATE_OBS'] + 'Z', name = spoca_coronal_hole_name)
 		
-		new_events['spoca_coronal_hole_detection_statistics'] = list()
+		events['spoca_coronal_hole_detection_statistics'] = list()
 		for channel, stats in region_stats.items():
 			spoca_coronal_hole_detection_statistics_name = 'SPOCA_CoronalHoleDetectionStatistics_{date}_{id}_{channel}'.format(date=region['DATE_OBS'], id=id, channel=channel)
-			new_events['spoca_coronal_hole_detection_statistics'].append(get_spoca_coronal_hole_detection_statistics(spoca_coronal_hole_detection_name, channel, stats[id], name = spoca_coronal_hole_detection_statistics_name))
+			events['spoca_coronal_hole_detection_statistics'].append(get_spoca_coronal_hole_detection_statistics(spoca_coronal_hole_detection_name, channel, stats[id], name = spoca_coronal_hole_detection_statistics_name))
 		
-		events[spoca_coronal_hole_name] = new_events
+		CH_events[spoca_coronal_hole_name] = events
+		
+		detection_names.append(spoca_coronal_hole_detection_name)
 	
-	return events
+	# Create the run event
+	image_date = image_hdu.header['DATE_OBS'].split('.')[0] # We don't want the subsecond
+	spoca_coronal_hole_run_name = 'SPOCA_CoronalHoleRun_{date}'.format(date=image_date)
+	run_event = get_spoca_coronal_hole_run(image_date + 'Z', detection_names, name = spoca_coronal_hole_run_name)
+	
+	return run_event, CH_events
 
 
 def merge_spoca_coronal_hole(spoca_coronal_hole1, spoca_coronal_hole2):
@@ -238,12 +311,16 @@ if __name__ == '__main__':
 		logging.info('Parsing map %s', map_path)
 		
 		# Get all events in the CHMap
-		map_events = get_CHMap_events(map_path)
+		run_event, CH_events = get_CHMap_events(map_path)
 		
-		for name, events in map_events.items():
+		# Write the CH events
+		for name, events in CH_events.items():
 			
 			# Update the SPOCA_CoronalHole event with known coronal holes
 			spoca_coronal_holes[name] = merge_spoca_coronal_hole(events['spoca_coronal_hole'], spoca_coronal_holes.get(name))
 			
 			# Write the events to JSON
 			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_detection_statistics'], output_directory = args.output_directory)
+		
+		# Write the run event
+		write_events(run_event, output_directory = args.output_directory)
