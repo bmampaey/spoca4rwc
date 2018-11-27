@@ -204,10 +204,10 @@ def submit_events(CH_map, output_directory = None):
 			run_event['data']['detections'].remove(events['spoca_coronal_hole_detection']['name'])
 			continue
 		
-		# Create the SPOCA_CoronalHoleDetectionStatistics events
-		for event in events['spoca_coronal_hole_detection_statistics']:
+		# Create the SPOCA_CoronalHoleStatistics events
+		for event in events['spoca_coronal_hole_statistics']:
 			try:
-				create_event('SPOCA_CoronalHoleDetectionStatistics', event)
+				create_event('SPOCA_CoronalHoleStatistics', event)
 			except EventDBError as why:
 				logging.error('Failed to submit event "%s": %s', event['name'], why)
 		
@@ -219,7 +219,7 @@ def submit_events(CH_map, output_directory = None):
 		
 		# Write the events if requested
 		if output_directory is not None:
-			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_detection_statistics'], output_directory = output_directory)
+			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_statistics'], output_directory = output_directory)
 	
 	# Create the SPOCA_CoronalHoleRun event
 	create_event('SPOCA_CoronalHoleRun', run_event)
@@ -273,8 +273,8 @@ def main(start_date, end_date):
 			CH_maps = CH_maps[-tracking_overlap:]
 			
 			# We submit the events from the CH maps
-			#for CH_map in CH_maps:
-			#	submit_events(CH_map, output_directory = os.path.join(events_directory, date.strftime('%Y%m%d_%H%M%S'))
+			for CH_map in CH_maps:
+				submit_events(CH_map, output_directory = os.path.join(events_directory, date.strftime('%Y%m%d_%H%M%S'))
 			
 		else:
 			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_overlap + tracking_run_count, len(CH_maps))

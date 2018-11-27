@@ -117,12 +117,37 @@ def get_heliographic_coordinate(map, x, y, time, name = None):
 	return get_event('_HeliographicCoordinate', data, name = name)
 
 
-def get_solar_surface_contour(map, x, y, name = None):
+def get_solar_surface_contour(map, chaincode, name = None):
 	'''Return a _SolarSurface_Contour event'''
+	
+	# Compute the chain code in the different coordinates systems
+	stonyhurst = list()
+	carrington = list()
+	heeq = list()
+	
+	for x, y in zip(*chaincode):
+		# If x and y are both 0 then it is the end of the chaincode
+		if (x == 0 and y == 0):
+			break
+		else:
+			# If we cannot convert some pixel coordinates to sun coordinates, we just skip it
+			try:
+				stonyhurst.append(get_heliographic_coordinate_stonyhurst(map, x, y))
+			except ValueError:
+				pass
+			try:
+				carrington.append(get_heliographic_coordinate_carrington(map, x, y))
+			except ValueError:
+				pass
+			try:
+				heeq.append(get_heliocentric_coordinate_heeq(map, x, y))
+			except ValueError:
+				pass
+	
 	data = {
-		'Stonyhurst': get_heliographic_coordinate_stonyhurst(map, x, y),
-		'Carrington': get_heliographic_coordinate_carrington(map, x, y),
-		'HEEQ': get_heliocentric_coordinate_heeq(map, x, y),
+		'Stonyhurst': stonyhurst,
+		'Carrington': carrington,
+		'HEEQ': heeq,
 	}
 	
 	return get_event('_SolarSurface_Contour', data, name = name)
@@ -143,32 +168,19 @@ def get_spoca_coronal_hole(spoca_coronal_hole_detection_name, time, name = None)
 def get_spoca_coronal_hole_detection(map, region, region_stat, chaincode, name = None):
 	'''Return a SPOCA_CoronalHoleDetection event'''
 	
-	# Compute the chain code
-	contour = list()
-	for x, y in zip(*chaincode):
-		# If x and y are both 0 then it is the end of the chaincode
-		if (x == 0 and y == 0):
-			break
-		else:
-			# If we cannot convert some pixel coordinates to sun coordinates, we just skip it
-			try:
-				contour.append(get_solar_surface_contour(map, x, y))
-			except ValueError:
-				pass
-	
 	data = {
 		'DetectionTime': region['DATE_OBS'] + 'Z',
 		'AreaError': float(region_stat['AREA_ATDISKCENTER_UNCERTAINITY']),
 		'Area': float(region_stat['AREA_ATDISKCENTER']),
 		'Location': get_heliographic_coordinate(map, region_stat['XCENTER'], region_stat['YCENTER'], region['DATE_OBS'] + 'Z'),
-		'Contour': contour,
+		'Contour': get_solar_surface_contour(map, chaincode),
 	}
 	
 	return get_event('SPOCA_CoronalHoleDetection', data, name = name)
 
 
-def get_spoca_coronal_hole_detection_statistics(detection, channel, region_stat, name = None):
-	'''Return a SPOCA_CoronalHoleDetectionStatistics event'''
+def get_spoca_coronal_hole_statistics(detection, channel, region_stat, name = None):
+	'''Return a SPOCA_CoronalHoleStatistics event'''
 	data = {
 		'Detection': detection,
 		'ImageChannel': channel,
@@ -185,7 +197,7 @@ def get_spoca_coronal_hole_detection_statistics(detection, channel, region_stat,
 		'PixelsNumber': int(region_stat['NUMBER_GOOD_PIXELS']),
 	}
 	
-	return get_event('SPOCA_CoronalHoleDetectionStatistics', data, name = name)
+	return get_event('SPOCA_CoronalHoleStatistics', data, name = name)
 
 
 def get_spoca_coronal_hole_run(image_time, detections, run_time = None, version = spoca_version, name = None):
@@ -202,7 +214,7 @@ def get_spoca_coronal_hole_run(image_time, detections, run_time = None, version 
 
 
 def get_CHMap_events(map_path):
-	'''Return all the SPOCA_CoronalHole, SPOCA_CoronalHoleDetection and SPOCA_CoronalHoleDetectionStatistics events in a SPoCA CHMap'''
+	'''Return all the SPOCA_CoronalHole, SPOCA_CoronalHoleDetection and SPOCA_CoronalHoleStatistics events in a SPoCA CHMap'''
 	# Open the FITS file
 	hdus = fits.open(map_path)
 	
@@ -250,10 +262,10 @@ def get_CHMap_events(map_path):
 		spoca_coronal_hole_name = 'SPOCA_CoronalHole_{color}'.format(color=region['TRACKED_COLOR'])
 		events['spoca_coronal_hole'] = get_spoca_coronal_hole(spoca_coronal_hole_detection_name, region['DATE_OBS'] + 'Z', name = spoca_coronal_hole_name)
 		
-		events['spoca_coronal_hole_detection_statistics'] = list()
+		events['spoca_coronal_hole_statistics'] = list()
 		for channel, stats in region_stats.items():
-			spoca_coronal_hole_detection_statistics_name = 'SPOCA_CoronalHoleDetectionStatistics_{date}_{id}_{channel}'.format(date=region['DATE_OBS'], id=id, channel=channel)
-			events['spoca_coronal_hole_detection_statistics'].append(get_spoca_coronal_hole_detection_statistics(spoca_coronal_hole_detection_name, channel, stats[id], name = spoca_coronal_hole_detection_statistics_name))
+			spoca_coronal_hole_statistics_name = 'SPOCA_CoronalHoleStatistics_{date}_{id}_{channel}'.format(date=region['DATE_OBS'], id=id, channel=channel)
+			events['spoca_coronal_hole_statistics'].append(get_spoca_coronal_hole_statistics(spoca_coronal_hole_detection_name, channel, stats[id], name = spoca_coronal_hole_statistics_name))
 		
 		CH_events[spoca_coronal_hole_name] = events
 		
@@ -320,7 +332,7 @@ if __name__ == '__main__':
 			spoca_coronal_holes[name] = merge_spoca_coronal_hole(events['spoca_coronal_hole'], spoca_coronal_holes.get(name))
 			
 			# Write the events to JSON
-			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_detection_statistics'], output_directory = args.output_directory)
+			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_statistics'], output_directory = args.output_directory)
 		
 		# Write the run event
 		write_events(run_event, output_directory = args.output_directory)
