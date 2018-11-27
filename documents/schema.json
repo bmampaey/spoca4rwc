@@ -420,6 +420,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/_HeliographicCoordinate_Stonyhurst"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -440,6 +443,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/_HeliographicCoordinate_Carrington"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -460,6 +466,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/_HeliocentricCoordinate_HEEQ"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -480,6 +489,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/_HeliographicCoordinate"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -500,6 +512,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/_SolarSurface_Contour"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -520,6 +535,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/SPOCA_CoronalHole"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -540,6 +558,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/SPOCA_CoronalHoleDetection"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -560,6 +581,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/SPOCA_CoronalHoleStatistics"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -580,6 +604,9 @@
                 },
                 "data": {
                     "$ref": "#/definitions/SPOCA_CoronalHoleRun"
+                },
+                "name": {
+                    "type": "string"
                 }
             },
             "required": [
