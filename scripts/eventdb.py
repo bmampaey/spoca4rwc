@@ -99,7 +99,7 @@ if __name__ == '__main__':
 		
 		try:
 			f = open(file_path)
-			event = json.load(f, allow_nan=False)
+			event = json.load(f)
 			f.close()
 		except json.JSONDecodeError as why:
 			logging.error('Could not parse file %s: %s', file_path, why)
