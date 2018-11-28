@@ -272,10 +272,14 @@ def main(start_date, end_date):
 			# Keep only the CH maps needed for the overlap
 			CH_maps = CH_maps[-tracking_overlap:]
 			
-			# We submit the events from the CH maps
+			# We submit and write the events from the CH maps
 			for CH_map in CH_maps:
-				submit_events(CH_map, output_directory = os.path.join(events_directory, date.strftime('%Y%m%d_%H%M%S'))
-			
+				# Write the events to a subfolder based on the name of the CH_map
+				output_directory = os.path.join(events_directory, os.path.basename(CH_map).split('.')[0])
+				os.makedirs(output_directory, exist_ok=True)
+				
+				submit_events(CH_map, output_directory = output_directory)
+		
 		else:
 			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_overlap + tracking_run_count, len(CH_maps))
 
