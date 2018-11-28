@@ -65,8 +65,9 @@ class JobError(Exception):
 		self.extra = extra
 	
 	def __str__(self):
+		message = ''
 		if self.message is not None:
-			message = self.message.format(returncode = self.returncode, stdout = self.stdout, stderr = self.stderr, job_name = self.job_name, **self.extra)
+			message += self.message.format(returncode = self.returncode, stdout = self.stdout, stderr = self.stderr, job_name = self.job_name, **self.extra)
 		else:
 			if self.job_name:
 				message += 'Job "{job_name}" ran with stderr:'.format(job_name = self.job_name)
