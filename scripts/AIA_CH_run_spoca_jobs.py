@@ -187,20 +187,28 @@ def update_event(event_type, event, merge_events):
 	result = eventdb.submit_event(event)
 	logging.info('Succesfully submitted event "%s" (%s)', event['name'], result)
 
-
-def submit_events(CH_map, output_directory = None):
+def save_events(run_event, CH_events, subdirectory):
+	output_directory = os.path.join(events_directory, subdirectory)
+	os.makedirs(output_directory, exist_ok=True)
 	
-	# Extract the events from the CH_map
-	run_event, CH_events = get_CHMap_events(CH_map)
+	# Write the run event
+	write_events(run_event, output_directory = output_directory)
+	
+	# Write the CH events
+	for name, events in CH_events.items():
+		write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_statistics'], output_directory = output_directory)
+
+def submit_events(run_event, CH_events):
 	
 	for name, events in CH_events.items():
-		import ipdb; ipdb.set_trace()
+		
 		# Create the SPOCA_CoronalHoleDetection event
 		try:
 			create_event('SPOCA_CoronalHoleDetection', events['spoca_coronal_hole_detection'])
 		except EventDBError as why:
 			logging.error('Failed to submit event "%s": %s', events['spoca_coronal_hole_detection']['name'], why)
 			# If we fail, we must not submit an other event dependent on the SPOCA_CoronalHoleDetection event
+			# So we modify the SPOCA_CoronalHoleRun event, and skip the SPOCA_CoronalHole and SPOCA_CoronalHoleStatistics
 			run_event['data']['detections'].remove(events['spoca_coronal_hole_detection']['name'])
 			continue
 		
@@ -217,15 +225,9 @@ def submit_events(CH_map, output_directory = None):
 		except EventDBError as why:
 			logging.error('Failed to submit event "%s": %s', name, why)
 		
-		# Write the events if requested
-		if output_directory is not None:
-			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_statistics'], output_directory = output_directory)
-	
 	# Create the SPOCA_CoronalHoleRun event
 	create_event('SPOCA_CoronalHoleRun', run_event)
-	
-	# Write the event if requested
-	write_events(run_event, output_directory = output_directory)
+
 
 def main(start_date, end_date):
 	
@@ -272,13 +274,14 @@ def main(start_date, end_date):
 			# Keep only the CH maps needed for the overlap
 			CH_maps = CH_maps[-tracking_overlap:]
 			
-			# We submit and write the events from the CH maps
+			# Extract, write and submit the events from the CH map
 			for CH_map in CH_maps:
-				# Write the events to a subfolder based on the name of the CH_map
-				output_directory = os.path.join(events_directory, os.path.basename(CH_map).split('.')[0])
-				os.makedirs(output_directory, exist_ok=True)
+				run_event, CH_events = get_CHMap_events(CH_map)
 				
-				submit_events(CH_map, output_directory = output_directory)
+				# The subdirectory is based on the name of the CH_map
+				save_events(run_event, CH_events, os.path.basename(CH_map).split('.')[0])
+				
+				submit_events(run_event, CH_events)
 		
 		else:
 			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_overlap + tracking_run_count, len(CH_maps))
