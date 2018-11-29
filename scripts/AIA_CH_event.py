@@ -73,7 +73,7 @@ def pixel_to_heliocentric_earth_equatorial(map, x, y):
 	# SunPy requires to use intermediate heliographic coordinates
 	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
 	
-	heeq = stonyhurst.transform_to(frames.Heliocentric(observer="earth", obstime=map.date))
+	heeq = stonyhurst.cartesian
 	
 	if math.isfinite(heeq.x.value) and math.isfinite(heeq.y.value) and math.isfinite(heeq.z.value):
 		return {
