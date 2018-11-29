@@ -38,37 +38,39 @@ def get_event(event_type, data, name = None):
 	
 	return event
 
-
-def pixel_to_heliographic_stonyhurst(map, x, y):
-	'''Convert pixel coordinates to Heliographic Stonyhurst coordinates'''
-	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+def get_heliographic_coordinate_stonyhurst(world, name = None):
+	'''Return a _HeliographicCoordinate_Stonyhurst event'''
+	
 	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
 	
 	if math.isfinite(stonyhurst.lat.degree) and math.isfinite(stonyhurst.lon.degree):
-		return {
+		data = {
 			'Latitude': stonyhurst.lat.degree,
 			'Longitude': stonyhurst.lon.degree,
 		}
 	else:
 		raise ValueError('Cannot convert pixel coordinates to Heliographic Stonyhurst coordinates')
+	
+	return get_event('_HeliographicCoordinate_Stonyhurst', data, name = name)
 
 
-def pixel_to_heliographic_carrington(map, x, y):
-	'''Convert pixel coordinates to Heliographic Carrington coordinates'''
-	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+def get_heliographic_coordinate_carrington(world, name = None):
+	'''Return a _HeliographicCoordinate_Carrington event'''
 	carrington = world.transform_to(frames.HeliographicCarrington)
 	
 	if math.isfinite(carrington.lat.degree) and math.isfinite(carrington.lon.degree):
-		return {
+		data = {
 			'Latitude': carrington.lat.degree,
 			'Longitude': carrington.lon.degree,
 		}
 	else:
 		raise ValueError('Cannot convert pixel coordinates to Heliographic Carrington coordinates')
+	
+	return get_event('_HeliographicCoordinate_Carrington', data, name = name)
 
-def pixel_to_heliocentric_earth_equatorial(map, x, y):
-	'''Convert pixel coordinates to Heliocentric Earth Equatorial coordinates'''
-	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+
+def get_heliocentric_coordinate_heeq(world, name = None):
+	'''Return a _HeliocentricCoordinate_HEEQ event'''
 	
 	# SunPy requires to use intermediate heliographic coordinates
 	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
@@ -76,42 +78,27 @@ def pixel_to_heliocentric_earth_equatorial(map, x, y):
 	heeq = stonyhurst.cartesian
 	
 	if math.isfinite(heeq.x.value) and math.isfinite(heeq.y.value) and math.isfinite(heeq.z.value):
-		return {
+		data = {
 			'x': heeq.x.to(km).value,
 			'y': heeq.y.to(km).value,
 			'z': heeq.y.to(km).value,
 		}
 	else:
 		raise ValueError('Cannot convert pixel coordinates to Heliocentric Earth Equatorial coordinates')
-
-
-def get_heliographic_coordinate_stonyhurst(map, x, y, name = None):
-	'''Return a _HeliographicCoordinate_Stonyhurst event'''
-	data = pixel_to_heliographic_stonyhurst(map, x, y)
-	
-	return get_event('_HeliographicCoordinate_Stonyhurst', data, name = name)
-
-
-def get_heliographic_coordinate_carrington(map, x, y, name = None):
-	'''Return a _HeliographicCoordinate_Carrington event'''
-	data = pixel_to_heliographic_carrington(map, x, y)
-	
-	return get_event('_HeliographicCoordinate_Carrington', data, name = name)
-
-
-def get_heliocentric_coordinate_heeq(map, x, y, name = None):
-	'''Return a _HeliocentricCoordinate_HEEQ event'''
-	data = pixel_to_heliocentric_earth_equatorial(map, x, y)
 	
 	return get_event('_HeliocentricCoordinate_HEEQ', data, name = name)
 
 
 def get_heliographic_coordinate(map, x, y, time, name = None):
 	'''Return a _HeliographicCoordinate event'''
+	
+	# Convert the pixel coordinates to world coordinates
+	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+	
 	data = {
 		'Time': time,
-		'Stonyhurst': get_heliographic_coordinate_stonyhurst(map, x, y),
-		'Carrington': get_heliographic_coordinate_carrington(map, x, y),
+		'Stonyhurst': get_heliographic_coordinate_stonyhurst(world),
+		'Carrington': get_heliographic_coordinate_carrington(world),
 	}
 	
 	return get_event('_HeliographicCoordinate', data, name = name)
@@ -130,17 +117,20 @@ def get_solar_surface_contour(map, chaincode, name = None):
 		if (x == 0 and y == 0):
 			break
 		else:
+			# Convert the pixel coordinates to world coordinates
+			world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+			
 			# If we cannot convert some pixel coordinates to sun coordinates, we just skip it
 			try:
-				stonyhurst.append(get_heliographic_coordinate_stonyhurst(map, x, y))
+				stonyhurst.append(get_heliographic_coordinate_stonyhurst(world))
 			except ValueError:
 				pass
 			try:
-				carrington.append(get_heliographic_coordinate_carrington(map, x, y))
+				carrington.append(get_heliographic_coordinate_carrington(world))
 			except ValueError:
 				pass
 			try:
-				heeq.append(get_heliocentric_coordinate_heeq(map, x, y))
+				heeq.append(get_heliocentric_coordinate_heeq(world))
 			except ValueError:
 				pass
 	
