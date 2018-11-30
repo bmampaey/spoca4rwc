@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import configparser
 import subprocess
 import argparse
 
@@ -29,7 +28,7 @@ class Job:
 		else:
 			merged_kwargs = self.kwargs
 		
-		# Add executable
+		# Create the command
 		command = [self.executable]
 		
 		# Add kwargs
@@ -88,7 +87,7 @@ class JobError(Exception):
 # Start point of the script
 if __name__ == '__main__':
 	
-	parser = argparse.ArgumentParser(description = 'Run a SPoCA program', prefix_chars = '-')
+	parser = argparse.ArgumentParser(description = 'Run executable as a job', prefix_chars = '-')
 	parser.add_argument('executable', help = 'The path to the executable')
 	parser.add_argument('parameters', metavar = 'PARAM', nargs = '*', help = 'Any additional parameter (must be preceded by "--")')
 	

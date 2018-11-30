@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import os
-import subprocess
 import logging
 import argparse
 from glob import glob
-from datetime import datetime, timedelta
-from spoca_job import Job, JobError
+from datetime import datetime
+from job import Job, JobError
 
 # Path to the overlay program
 overlay_exec = '/home/rwceventdb/SPoCA/bin/overlay.x'
@@ -13,62 +12,58 @@ overlay_exec = '/home/rwceventdb/SPoCA/bin/overlay.x'
 # Path to the overlay program config file
 overlay_config_file = '/home/rwceventdb/scripts/AIA_CH_overlay.config'
 
-# Directory to output the maps
-maps_directory = '/data/RWC/SPoCA/CH_maps/'
-
 # Directory where the prepped AIA files are located
 aia_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
 
 # Directory where the prepped HMI files are located
 hmi_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/hmi.m_45s.prepped/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
 
-# Wavelengths for spoca
-wavelengths = [193]
+# Wavelengths of AIA data to run the overlay program on
+AIA_wavelengths = [193]
 
-def get_files(date, wavelengths):
+def get_images(date):
+	'''Return AIA and HMI images for the specified date'''
 	file_paths = list()
 	
-	for wavelength in wavelengths:
+	for wavelength in AIA_wavelengths:
 		file_paths.append(min(glob(aia_file_pattern.format(date=date, wavelength=wavelength))))
 	
 	file_paths.append(min(glob(hmi_file_pattern.format(date=date))))
 	
 	return file_paths
 
-# Create a overlay job with the appropriate parameters
-overlay = Job(overlay_exec, config = overlay_config_file)
-
-def create_overlay(CH_map, images, output_directory = maps_directory):
+def create_overlays(map, output_directory):
+	'''Run the overlay program'''
 	
-	# We run the overlay program
-	logging.debug('Running overlay job:\n%s', ' '.join(overlay.get_command(CH_map, *images, output = output_directory)))
-	return_code, output, error = overlay(CH_map, *images, output = output_directory)
+	# Get the images on which to overlay the CH map
+	images = get_images(datetime.strptime(os.path.basename(map).split('.')[0], '%Y%m%d_%H%M%S'))
 	
-	# We check if the program ran succesfully
+	# Create a job for the overlay program with the appropriate parameters
+	job = Job(overlay_exec, map, *images, config = overlay_config_file, output = output_directory)
+	
+	logging.info('Running job\n%s', job)
+	
+	# Run the overlay job
+	return_code, output, error = job()
+	
+	# Check if the job ran succesfully
 	if return_code != 0:
-		raise JobError(return_code, output, error, job_name = 'overlay', CH_map = CH_map)
+		raise JobError(return_code, output, error, job_name = 'overlay', segmented_map = segmented_map)
+	elif not os.path.exists(map):
+		raise JobError(message = 'Could not find output file {map}', map = map)
 	else:
-		logging.info('overlay job on file "%s" ran without errors', CH_map)
+		logging.debug('Job ran without errors, output: %s', output)
 
-def main(CH_maps):
-	
-	# Start the loop
-	for CH_map in CH_maps:
-		date = datetime.strptime(os.path.basename(CH_map).split('.')[0], '%Y%m%d_%H%M%S')
-		
-		images = get_files(date, wavelengths)
-		
-		logging.info('Create overlay for CH Map %s', CH_map)
-		create_overlay(CH_map, images)
 
 # Start point of the script
 if __name__ == '__main__':
 	
 	# Get the arguments
-	parser = argparse.ArgumentParser(description = 'Run overlay to plot CH maps over AIA 193A fits files')
+	parser = argparse.ArgumentParser(description = 'Run overlay to plot CH maps over AIA and HMI images')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
 	parser.add_argument('--log_file', '-l', help = 'The file path of the log file')
-	parser.add_argument('CH_maps', metavar = 'CH_MAP', nargs='+', help = 'The file path to a CH map')
+	parser.add_argument('--output_directory', '-o', default = '.', help = 'The directory where to write the overlays')
+	parser.add_argument('maps', metavar = 'MAP', nargs='+', help = 'The file path to a tracked SPoCA CHMap')
 	
 	args = parser.parse_args()
 	
@@ -79,6 +74,7 @@ if __name__ == '__main__':
 		logging.basicConfig(level = logging.DEBUG if args.debug else logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s')
 	
 	try:
-		main(args.CH_maps)
+		for map in args.maps:
+			create_overlays(map, args.output_directory)
 	except Exception as why:
 		logging.critical(str(why))

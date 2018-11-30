@@ -25,6 +25,9 @@ region_stats_hdu_names = ['AIA_193_CoronalHoleStats', 'HMI_MAGNETOGRAM_CoronalHo
 # The SPoCA version
 spoca_version = '1'
 
+# Directory to output the events
+events_directory = '/data/RWC/SPoCA/CH_events/'
+
 
 def get_event(event_type, data, name = None):
 	'''Return a container for an event'''
@@ -235,7 +238,6 @@ def get_CHMap_events(map_path):
 		for region_stats_hdu_name in region_stats_hdu_names if region_stats_hdu_name in hdus
 	}
 	
-	
 	# Create the CH events
 	CH_events = dict()
 	
@@ -279,13 +281,31 @@ def merge_spoca_coronal_hole(spoca_coronal_hole1, spoca_coronal_hole2):
 	return spoca_coronal_hole1
 
 
-def write_events(*events, output_directory = '.'):
-	'''Write all the events to JSON files'''
-	for event in events:
-		file_path = os.path.join(output_directory, event['name'] + '.json')
-		logging.info('Writing JSON file %s', file_path)
-		with open(file_path, 'w') as f:
-			json.dump(event, f, ensure_ascii = False, indent = '\t')
+def write_event(event, output_directory = '.'):
+	'''Write an event to a JSON file'''
+	file_path = os.path.join(output_directory, event['name'] + '.json')
+	
+	logging.info('Writing JSON file %s', file_path)
+	
+	with open(file_path, 'w') as f:
+		json.dump(event, f, ensure_ascii = False, indent = '\t')
+
+
+def save_CHMap_events(run_event, CH_events, subdirectory):
+	'''Write the events from a CHMap to JSON files'''
+	# Create the ouptut directory
+	output_directory = os.path.join(events_directory, subdirectory)
+	os.makedirs(output_directory, exist_ok=True)
+	
+	# Write the run event
+	write_event(run_event, output_directory = output_directory)
+	
+	# Write the CH events
+	for name, events in CH_events.items():
+		write_event(events['spoca_coronal_hole'], output_directory = output_directory)
+		write_event(events['spoca_coronal_hole_detection'], output_directory = output_directory)
+		for event in events['spoca_coronal_hole_statistics']:
+			write_event(event, output_directory = output_directory)
 
 
 # Start point of the script
@@ -296,7 +316,7 @@ if __name__ == '__main__':
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
 	parser.add_argument('--log_file', '-l', help = 'The file path of the log file')
 	parser.add_argument('--output_directory', '-o', default = '.', help = 'The output directory for the JSON files')
-	parser.add_argument('maps', metavar = 'MAP', nargs='+', help = 'The path to a SPoCA CHMap')
+	parser.add_argument('maps', metavar = 'MAP', nargs='+', help = 'The file path to a tracked SPoCA CHMap')
 	
 	args = parser.parse_args()
 	
@@ -315,14 +335,4 @@ if __name__ == '__main__':
 		# Get all events in the CHMap
 		run_event, CH_events = get_CHMap_events(map_path)
 		
-		# Write the CH events
-		for name, events in CH_events.items():
-			
-			# Update the SPOCA_CoronalHole event with known coronal holes
-			spoca_coronal_holes[name] = merge_spoca_coronal_hole(events['spoca_coronal_hole'], spoca_coronal_holes.get(name))
-			
-			# Write the events to JSON
-			write_events(events['spoca_coronal_hole'], events['spoca_coronal_hole_detection'], *events['spoca_coronal_hole_statistics'], output_directory = args.output_directory)
-		
-		# Write the run event
-		write_events(run_event, output_directory = args.output_directory)
+		save_CHMap_events(run_event, CH_events, subdirectory = os.path.basename(map_path).split('.')[0])
