@@ -60,15 +60,15 @@ def date_range(start, end, step):
 
 def get_good_file(file_pattern, ignore_bits = None):
 	'''Return the first file that matches the file_pattern and has a good quality'''
-	
+
 	for file_path in sorted(glob(file_pattern)):
-		
+
 		# Get the quality of the file
 		if ignore_bits is None:
 			quality = get_quality(file_path)
 		else:
 			quality = get_quality(file_path, ignore_bits)
-		
+
 		# A quality of 0 means no defect
 		if quality == 0:
 			return file_path
@@ -78,25 +78,25 @@ def get_good_file(file_pattern, ignore_bits = None):
 
 def get_AIA_files(date, wavelengths):
 	'''Return a list of AIA files for the specified date and wavelengths'''
-	
+
 	file_paths = list()
-	
+
 	for wavelength in wavelengths:
-		
+
 		file_path = get_good_file(aia_file_pattern.format(date=date, wavelength=wavelength))
-		
+
 		if file_path is None:
 			raise FileNotFoundError('AIA file for date %s and wavelength %s was not found' % (date, wavelengths))
 		else:
 			file_paths.append(file_path)
-	
+
 	return file_paths
 
 def get_HMI_files(date):
 	'''Return a list of HMI files for the specified date'''
-	
+
 	file_path = get_good_file(hmi_file_pattern.format(date=date))
-	
+
 	if file_path is None:
 		raise FileNotFoundError('HMI file for date %s was not found' % date)
 	else:
@@ -105,18 +105,18 @@ def get_HMI_files(date):
 
 def create_segmented_map(AIA_images, date):
 	'''Run the classification program'''
-	
+
 	# File path for the Segmented map to create
 	segmented_map = os.path.join(maps_directory, date.strftime('%Y%m%d_%H%M%S') + '.SegmentedMap.fits')
-	
+
 	# Create a job for the classification program with the appropriate parameters
 	job = Job(classification_exec, *AIA_images, config = classification_config_file, centersFile = classification_centers_file, output = segmented_map)
-	
+
 	logging.info('Running job\n%s', job)
-	
+
 	# Run the classification job
 	return_code, output, error = job()
-	
+
 	# Check if the job ran succesfully
 	if return_code != 0:
 		raise JobError(return_code, output, error, job_name = 'classification', AIA_images = AIA_images)
@@ -124,24 +124,24 @@ def create_segmented_map(AIA_images, date):
 		raise JobError(message = 'Could not find output file {segmented_map}', segmented_map = segmented_map)
 	else:
 		logging.debug('Job ran without errors, output: %s', output)
-	
+
 	return segmented_map
 
 
 def create_CH_map(segmented_map, date, images):
 	'''Run the get_CH_map program'''
-	
+
 	# File path for the CH map to create
 	CH_map = os.path.join(maps_directory, date.strftime('%Y%m%d_%H%M%S') + '.CHMap.fits')
-	
+
 	# Create a job for the get_CH_map program with the appropriate parameters
 	job = Job(get_CH_map_exec, segmented_map, *images, config = get_CH_map_config_file, output = CH_map)
-	
+
 	logging.info('Running job\n%s', job)
-	
+
 	# Run the get_CH_map job
 	return_code, output, error = job()
-	
+
 	# Check if the job ran succesfully
 	if return_code != 0:
 		raise JobError(return_code, output, error, job_name = 'get_CH_map', segmented_map = segmented_map)
@@ -149,57 +149,57 @@ def create_CH_map(segmented_map, date, images):
 		raise JobError(message = 'Could not find output file {CH_map}', CH_map = CH_map)
 	else:
 		logging.debug('Job ran without errors, output: %s', output)
-	
+
 	return CH_map
 
 
 def track_maps(tracked_maps, untracked_maps, newly_tracked_maps):
 	'''Run the tracking program'''
-	
+
 	# File paths of the maps to run the tracking on
 	maps = tracked_maps[-tracking_overlap:] + untracked_maps
-	
+
 	# Create a job for the tracking program with the appropriate parameters
 	job = Job(tracking_exec, *maps, config = tracking_config_file, maxDeltaT = (tracking_overlap * classification_run_frequency).total_seconds())
-	
+
 	logging.info('Running job\n%s', job)
-	
+
 	# Run the tracking job
 	return_code, output, error = job()
-	
+
 	# Check if the job ran succesfully
 	if return_code != 0:
 		raise JobError(return_code, output, error, job_name = 'tracking', maps = maps)
 	else:
 		logging.debug('Job ran without errors, output: %s', output)
-	
+
 	return tracked_maps + untracked_maps, [], newly_tracked_maps + untracked_maps
 
 
-def run_spoca_jobs(start_date, end_date, tracked_maps = None, untracked_maps = None):
+def run_spoca_jobs(start_date, end_date, max_delay, tracked_maps = None, untracked_maps = None):
 	'''Run the SPoCA jobs to create and track the CHMaps'''
-	
+
 	# If no tracked maps were given, we assumed all existing are
 	if tracked_maps is None:
 		tracked_maps = sorted(glob(os.path.join(maps_directory, '*' + '.CHMap.fits')))
-	
+
 	# If no untracked maps were given, we assume none are
 	if untracked_maps is None:
 		untracked_maps = list()
-	
+
 	# We will return the list of all newly tracked maps
 	newly_tracked_maps = list()
-	
+
 	# Start the loop
 	for date in date_range(start_date, end_date, classification_run_frequency):
-		
+
 		# Get the AIA files for the classification
 		try:
 			AIA_images = get_AIA_files(date, AIA_wavelengths)
 		except FileNotFoundError as why:
-			
+
 			logging.info('Missing AIA files for date %s', date)
-			
+
 			# If max_delay has passed, then we continue, else we stop
 			if datetime.now() - date >= max_delay:
 				logging.warning('Max delay %s was passed, skipping missing files' % max_delay)
@@ -207,39 +207,39 @@ def run_spoca_jobs(start_date, end_date, tracked_maps = None, untracked_maps = N
 			else:
 				logging.info('Max delay %s was not passed, waiting missing files' % max_delay)
 				break
-		
+
 		# Get the list of HMI images
 		try:
 			HMI_images = get_HMI_files(date)
 		except FileNotFoundError as why:
 			# It's okay if HMI files are missing, we just won't have HMI stats for the CH
 			HMI_images = list()
-		
+
 		# Create the Segmented map
 		segmented_map = create_segmented_map(AIA_images, date)
-		
+
 		# Create the CH map
 		CH_map = create_CH_map(segmented_map, date, AIA_images + HMI_images)
-		
+
 		# Add the CH map to the list of untracked maps
 		untracked_maps.append(CH_map)
-		
+
 		# If we have enough untracked maps, we run the tracking program
 		if len(untracked_maps) >= tracking_run_count:
 			tracked_maps, untracked_maps, newly_tracked_maps = track_maps(tracked_maps, untracked_maps, newly_tracked_maps)
 		else:
 			logging.debug('Not enough maps to run tracking, need %s but have only %s', tracking_run_count, len(untracked_maps))
-	
+
 	# Track the remaing untracked maps
 	if untracked_maps:
 		tracked_maps, untracked_maps, newly_tracked_maps = track_maps(tracked_maps, untracked_maps, newly_tracked_maps)
-	
+
 	return newly_tracked_maps
 
 
 # Start point of the script
 if __name__ == '__main__':
-	
+
 	# Get the arguments
 	parser = argparse.ArgumentParser(description = 'Create and track CH maps')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
@@ -248,19 +248,19 @@ if __name__ == '__main__':
 	parser.add_argument('--end_date', '-e', default = datetime.utcnow().strftime('%Y-%m-%d'), help = 'End date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--tracked_maps', '-t', metavar = 'MAP', nargs='*', help = 'File paths of previously tracked CH map')
 	parser.add_argument('--untracked_maps', '-u', metavar = 'MAP', nargs='*', help = 'File paths of not yet tracked CH map')
-	
+
 	args = parser.parse_args()
-	
+
 	# Setup the logging
 	if args.log_file:
 		logging.basicConfig(level = logging.DEBUG if args.debug else logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s', filename=args.log_file)
 	else:
 		logging.basicConfig(level = logging.DEBUG if args.debug else logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s')
-	
+
 	# Parse the start and end date
 	start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
 	end_date = datetime.strptime(args.end_date, '%Y-%m-%d') if args.end_date else datetime.utcnow()
-	
+
 	# Run the SPoCA jobs
 	try:
 		CH_maps = run_spoca_jobs(start_date, end_date, args.tracked_maps, args.untracked_maps)
