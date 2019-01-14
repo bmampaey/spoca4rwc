@@ -58,7 +58,7 @@ class EventDB:
 		response = requests.get(self.get_address, params = params or {}, timeout = self.timeout)
 		
 		if response.status_code != 200:
-			logging.error('GET returned error %s "%": %s', response.status_code, response.reason, response.text)
+			logging.error('GET returned error %s "%s": %s', response.status_code, response.reason, response.text)
 			response.raise_for_status()
 		
 		response_data = response.json()
