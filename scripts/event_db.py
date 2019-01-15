@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
 import requests
 import json
 import logging
+import importlib
 
 # Address of the EventDB server
-event_db_server = "http://solrwc2:8888/"
+event_db_server = "http://solrwc1:8888/"
 
 # Timeout in seconds for requests to the EventDB server
 event_db_timeout = 10
@@ -88,9 +90,11 @@ class EventDB:
 		except LookupError as why:
 			# The event does not exists
 			result = self.post_data(event)
-			logging.info('Succesfully submitted event "%s" (%s)', event['name'], result)
+			logging.info('Succesfully created event "%s" (%s)', event['name'], result)
 		else:
-			logging.warning('Trying to submit previously submitted event "%s"', event['name'])
+			logging.warning('Trying to create previously submitted event "%s"', event['name'])
+		
+		return result
 	
 	def update_event(self, event, merge_events):
 		'''Update an existing event in the Event DB'''
@@ -107,21 +111,23 @@ class EventDB:
 			
 		result = self.post_data(event)
 		logging.info('Succesfully submitted event "%s" (%s)', event['name'], result)
+		return result
 
 # Start point of the script
 if __name__ == '__main__':
 	
 	# Get the arguments
-	parser = argparse.ArgumentParser(description = 'Submit/Get an event to/from the Event DB')
+	parser = argparse.ArgumentParser(description = 'Create/Get/Update an event to/from the Event DB')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
 	parser.add_argument('--log_file', '-l', help = 'The file path of the log file')
-	parser.add_argument('--submit', '-s', metavar = 'FILEPATH', help = 'Submit an event from a JSON file')
 	parser.add_argument('--get', '-g', nargs = 2, metavar = ('TYPE', 'NAME'), help = 'Get an event by type and name')
+	parser.add_argument('--create', '-c', metavar = 'FILEPATH', help = 'Create an event from a JSON file')
+	parser.add_argument('--update', '-u', nargs = 2, metavar = ('FILEPATH', 'METHODPATH'), help = 'Update an event from a JSON file, using merge method')
 	
 	args = parser.parse_args()
 	
-	if not(args.submit or args.get):
-		parser.error('No action requested, add --submit or --get')
+	if not(args.get or args.create or args.update):
+		parser.error('No action requested, add --get or --create or --update')
 	
 	# Setup the logging
 	if args.log_file:
@@ -131,29 +137,9 @@ if __name__ == '__main__':
 	
 	event_db = EventDB()
 	
-	if args.submit:
-		file_path = args.submit
-		
-		try:
-			f = open(file_path)
-			event = json.load(f)
-			f.close()
-		except json.JSONDecodeError as why:
-			logging.error('Could not parse file %s: %s', file_path, why)
-		except Exception as why:
-			logging.error('Could not read file %s: %s', file_path, why)
-		
-		try:
-			result = event_db.create_event(event)
-		except EventDBError as why:
-			logging.error('Failed to submit event: %s', why)
-		except Exception as why:
-			logging.critical('Failed to submit event: %s', why)
-		else:
-			logging.info('Submitted event succesfully: %s', result)
-	
 	if args.get:
 		event_type, event_name = args.get
+		
 		try:
 			result = event_db.get_event(event_type, event_name)
 		except LookupError as why:
@@ -164,3 +150,57 @@ if __name__ == '__main__':
 			logging.critical('Failed to get event: %s', why)
 		else:
 			logging.info('Got event succesfully: %s', result)
+	
+	elif args.create:
+		file_path = args.create
+		
+		try:
+			f = open(file_path)
+			event = json.load(f)
+			f.close()
+		except json.JSONDecodeError as why:
+			logging.critical('Could not parse file %s: %s', file_path, why)
+			sys.exit(2)
+		except Exception as why:
+			logging.critical('Could not read file %s: %s', file_path, why)
+			sys.exit(2)
+		
+		try:
+			result = event_db.create_event(event)
+		except EventDBError as why:
+			logging.error('Failed to create event: %s', why)
+		except Exception as why:
+			logging.critical('Failed to create event: %s', why)
+		else:
+			logging.info('Created event succesfully: %s', result)
+	
+	elif args.update:
+		file_path, method_path = args.update
+		
+		try:
+			module_name, method_name = method_path.rsplit('.', 1)
+			module = importlib.import_module(module_name)
+			method = getattr(module, method_name)
+		except Exception as why:
+			logging.critical('Failed to find method "%s": %s', method_path, why)
+			sys.exit(2)
+		
+		try:
+			f = open(file_path)
+			event = json.load(f)
+			f.close()
+		except json.JSONDecodeError as why:
+			logging.critical('Could not parse file %s: %s', file_path, why)
+			sys.exit(2)
+		except Exception as why:
+			logging.critical('Could not read file %s: %s', file_path, why)
+			sys.exit(2)
+		
+		try:
+			result = event_db.update_event(event, method)
+		except EventDBError as why:
+			logging.error('Failed to update event: %s', why)
+		except Exception as why:
+			logging.critical('Failed to update event: %s', why)
+		else:
+			logging.info('Updated event succesfully: %s', result)
