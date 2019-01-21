@@ -23,7 +23,7 @@ chaincode_hdu_name = 'ChainCodes'
 region_stats_hdu_names = ['AIA_193_CoronalHoleStats', 'HMI_MAGNETOGRAM_CoronalHoleStats']
 
 # The SPoCA version
-spoca_version = '1'
+spoca_version = '1.1'
 
 # Directory to output the events
 events_directory = '/data/RWC/SPoCA/CH_events/'
@@ -207,7 +207,7 @@ def get_spoca_coronal_hole_run(image_time, detections, run_time = None, version 
 
 
 def get_CHMap_events(map_path):
-	'''Return all the SPOCA_CoronalHole, SPOCA_CoronalHoleDetection and SPOCA_CoronalHoleStatistics events in a SPoCA CHMap'''
+	'''Return all the SPOCA_CoronalHole, SPOCA_CoronalHoleDetection,  SPOCA_CoronalHoleStatistics and SPOCA_CoronalHoleRun events in a SPoCA CHMap'''
 	# Open the FITS file
 	hdus = fits.open(map_path)
 	
@@ -239,7 +239,7 @@ def get_CHMap_events(map_path):
 	}
 	
 	# Create the CH events
-	CH_events = dict()
+	CH_events = list()
 	
 	# Keep the list of detections for the SPOCA_CoronalHoleRun event
 	detection_names = list()
@@ -259,7 +259,7 @@ def get_CHMap_events(map_path):
 			spoca_coronal_hole_statistics_name = 'SPOCA_CoronalHoleStatistics_{date}_{id}_{channel}'.format(date=region['DATE_OBS'], id=id, channel=channel)
 			events['spoca_coronal_hole_statistics'].append(get_spoca_coronal_hole_statistics(spoca_coronal_hole_detection_name, channel, stats[id], name = spoca_coronal_hole_statistics_name))
 		
-		CH_events[spoca_coronal_hole_name] = events
+		CH_events.append(events)
 		
 		detection_names.append(spoca_coronal_hole_detection_name)
 	
@@ -300,10 +300,29 @@ def save_CHMap_events(run_event, CH_events, subdirectory):
 	# Write the run event
 	write_event(run_event, output_directory = output_directory)
 	
+	# Sometime more than 1 spoca coronal hole detections can belong to the same spoca coronal hole (they have the same tracking color)
+	# In that case the spoca coronal hole events must be merged
+	# So we keep a spoca coronal hole events dict by event name
+	spoca_coronal_hole_events = dict()
+	
 	# Write the CH events
-	for name, events in CH_events.items():
-		write_event(events['spoca_coronal_hole'], output_directory = output_directory)
+	for events in CH_events:
+		
+		# Write the spoca coronal hole detection event to disk
 		write_event(events['spoca_coronal_hole_detection'], output_directory = output_directory)
+		
+		# Merge the spoca coronal hole event
+		event = events['spoca_coronal_hole']
+		if event['name'] in spoca_coronal_hole_events:
+			event = merge_spoca_coronal_hole(event, spoca_coronal_hole_events[event['name']])
+		
+		# Add the spoca coronal hole event to the dict
+		spoca_coronal_hole_events[event['name']] = event
+		
+		# Write the spoca coronal hole event to disk
+		write_event(event, output_directory = output_directory)
+		
+		# Write the spoca coronal hole statistics events to disk
 		for event in events['spoca_coronal_hole_statistics']:
 			write_event(event, output_directory = output_directory)
 

@@ -11,7 +11,7 @@ import importlib
 event_db_server = "http://solrwc1:8888/"
 
 # Timeout in seconds for requests to the EventDB server
-event_db_timeout = 10
+event_db_timeout = 100
 
 class EventDBError(Exception):
 	pass
