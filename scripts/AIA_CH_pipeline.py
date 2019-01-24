@@ -17,7 +17,7 @@ if __name__ == '__main__':
 	parser.add_argument('--start_date', '-s', default = '2010-05-20', help = 'Start date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--end_date', '-e', default = datetime.utcnow().strftime('%Y-%m-%d'), help = 'End date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--max_delay', '-m', default = 15, type = int, help = 'Max delay in days after which missing AIA files will be ignored')
-	
+	parser.add_argument('--do_not_submit', action='store_true', help = 'If set, the events will not be submitted')
 	args = parser.parse_args()
 	
 	# Setup the logging
@@ -41,6 +41,7 @@ if __name__ == '__main__':
 	# Instantiate the EventDB
 	event_db = EventDB()
 	
-	# Submit the events from the CH maps to the Event DB
-	for CH_map in CH_maps:
-		submit_CHMap_events(CH_map, event_db)
+	if not args.do_not_submit:
+		# Submit the events from the CH maps to the Event DB
+		for CH_map in CH_maps:
+			submit_CHMap_events(CH_map, event_db)
