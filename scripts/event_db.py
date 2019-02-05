@@ -13,16 +13,20 @@ event_db_server = "http://solrwc1:8888/"
 # Timeout in seconds for requests to the EventDB server
 event_db_timeout = 100
 
+# Maximum number of times a request will be retried
+event_db_max_retries = 10
+
 class EventDBError(Exception):
 	pass
 
 class EventDB:
 	'''Class to create, get and update events in the Event DB server'''
 	
-	def __init__(self, server = event_db_server, timeout = event_db_timeout):
+	def __init__(self, server = event_db_server, timeout = event_db_timeout, max_retries = event_db_max_retries):
 		self.post_address = server + 'message'
 		self.get_address = server + 'aquery'
 		self.timeout = timeout
+		self.max_retries = max_retries
 	
 	def get_errors(self, response_data):
 		'''Return the list of errors from response data'''
@@ -40,7 +44,18 @@ class EventDB:
 		except Exception as why:
 			raise EventDBError(str(why))
 		
-		response = requests.post(self.post_address, data = encoded_data, timeout = self.timeout, headers = {'Content-Type': 'application/json'})
+		for attempt in range(self.max_retries + 1):
+			try:
+				response = requests.post(self.post_address, data = encoded_data, timeout = self.timeout, headers = {'Content-Type': 'application/json'})
+			except requests.exceptions.RequestException as why:
+				logging.error('POST request failed (%s): %s', attempt, why)
+				last_exception = why
+			else:
+				logging.debug('POST request successful')
+				break
+		else:
+			logging.critical('POST request failed too many times for data %s', encoded_data)
+			raise last_exception
 		
 		if response.status_code != 200:
 			logging.error('POST returned error %s "%s": %s', response.status_code, response.reason, response.text)
@@ -57,7 +72,18 @@ class EventDB:
 	def get_data(self, params = None):
 		'''GET data from the Event DB'''
 		
-		response = requests.get(self.get_address, params = params or {}, timeout = self.timeout)
+		for attempt in range(self.max_retries + 1):
+			try:
+				response = requests.get(self.get_address, params = params or {}, timeout = self.timeout)
+			except requests.exceptions.RequestException as why:
+				logging.error('GET request failed (%s): %s', attempt, why)
+				last_exception = why
+			else:
+				logging.debug('GET request successful')
+				break
+		else:
+			logging.critical('GET request failed too many times for params %s', params)
+			raise last_exception
 		
 		if response.status_code != 200:
 			logging.error('GET returned error %s "%s": %s', response.status_code, response.reason, response.text)
