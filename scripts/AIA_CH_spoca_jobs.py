@@ -33,6 +33,9 @@ tracking_exec = '/home/rwceventdb/SPoCA/bin/tracking.x'
 # Path to the tracking program config file
 tracking_config_file = '/home/rwceventdb/scripts/AIA_CH_tracking.config'
 
+# Path to the tracking color file
+tracking_color_file = '/data/RWC/SPoCA_v2/CH_maps/tracking_color.txt'
+
 # The minimum number of files that overlaps with the previous tracking (see maxDeltaT)
 tracking_overlap = 6
 
@@ -57,6 +60,18 @@ def date_range(start, end, step):
 	while date < end:
 		yield date
 		date += step
+
+def parse_tracking_color_file(tracking_color_file):
+	try:
+		with open(tracking_color_file, 'tr') as f:
+			text = f.readline()
+		last_color = int(text.split(':')[1])
+	except Exception as why:
+		logging.warning('Could not read tracking color from file "%s": %s', tracking_color_file, why)
+		return 0
+	else:
+		logging.debug('Found last color %s from file %s', last_color, tracking_color_file)
+		return last_color
 
 def get_good_file(file_pattern, ignore_bits = None):
 	'''Return the first file that matches the file_pattern and has a good quality'''
@@ -159,8 +174,11 @@ def track_maps(tracked_maps, untracked_maps, newly_tracked_maps):
 	# File paths of the maps to run the tracking on
 	maps = tracked_maps[-tracking_overlap:] + untracked_maps
 	
+	# last color of the previous tracking
+	last_color = parse_tracking_color_file(tracking_color_file)
+	
 	# Create a job for the tracking program with the appropriate parameters
-	job = Job(tracking_exec, *maps, config = tracking_config_file, maxDeltaT = (tracking_overlap * classification_run_frequency).total_seconds())
+	job = Job(tracking_exec, *maps, config = tracking_config_file, maxDeltaT = (tracking_overlap * classification_run_frequency).total_seconds(), newColor = last_color)
 	
 	logging.info('Running job\n%s', job)
 	
@@ -172,6 +190,11 @@ def track_maps(tracked_maps, untracked_maps, newly_tracked_maps):
 		raise JobError(return_code, output, error, job_name = 'tracking', maps = maps)
 	else:
 		logging.debug('Job ran without errors, output: %s', output)
+		try:
+			with open(tracking_color_file, 'tw') as f:
+				f.write(output)
+		except Exception as why:
+			logging.error('Could not write tracking color to file "%s": %s', tracking_color_file, why)
 	
 	return tracked_maps + untracked_maps, [], newly_tracked_maps + untracked_maps
 
