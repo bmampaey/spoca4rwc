@@ -20,13 +20,13 @@ region_hdu_name = 'Regions'
 chaincode_hdu_name = 'ChainCodes'
 
 # The map HDUs that contains the region stats
-region_stats_hdu_names = ['AIA_193_CoronalHoleStats', 'HMI_MAGNETOGRAM_CoronalHoleStats']
+region_stats_hdu_names = ['AIA_193_CoronalHoleStats']
 
 # The SPoCA version
-spoca_version = '1.1'
+spoca_version = '2.0'
 
 # Directory to output the events
-events_directory = '/data/RWC/SPoCA/CH_events/'
+events_directory = '/data/RWC/SPoCA_v2/CH_events/'
 
 
 def get_event(event_type, data, name = None):

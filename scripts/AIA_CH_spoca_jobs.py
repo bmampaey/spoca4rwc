@@ -16,7 +16,7 @@ classification_exec = '/home/rwceventdb/SPoCA/bin/classification.x'
 classification_config_file = '/home/rwceventdb/scripts/AIA_CH_classification.config'
 
 # Path to the centers file
-classification_centers_file = '/data/RWC/SPoCA/CH_maps/centers.txt'
+classification_centers_file = '/data/RWC/SPoCA_v2/CH_maps/centers.txt'
 
 # The frequency to run the classification program
 classification_run_frequency = timedelta(hours = 4)
@@ -37,16 +37,16 @@ tracking_config_file = '/home/rwceventdb/scripts/AIA_CH_tracking.config'
 tracking_overlap = 6
 
 # The number of CH maps to run the tracking program on
-tracking_run_count = 6
+tracking_run_count = 3
 
 # Directory to output the maps
-maps_directory = '/data/RWC/SPoCA/CH_maps/'
+maps_directory = '/data/RWC/SPoCA_v2/CH_maps/'
 
 # Directory where the prepped AIA files are located
-aia_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
+aia_file_pattern = '/data/SDO/public/AIA_quicklook/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/H{date.hour:02d}00/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
 
 # Directory where the prepped HMI files are located
-hmi_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/hmi.m_45s.prepped/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
+hmi_file_pattern = '/data/SDO/public/HMI_quicklook/magnetogram/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
 
 # Wavelengths of AIA data to run the classification program on
 AIA_wavelengths = [193]

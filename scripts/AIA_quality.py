@@ -38,7 +38,7 @@ quality_bits = {
 31	: 'Image not available'
 }
 
-def get_quality(filepath, hdu = 0, quality_keyword = 'QUALITY', ignore_bits = [0, 1, 2, 3, 4, 8]):
+def get_quality(filepath, hdu = 0, quality_keyword = 'QUALITY', ignore_bits = [0, 1, 2, 3, 4, 8, 30]):
 	'''Return the quality value of the file, with ignore_bits set to 0'''
 	quality = fits.open(filepath)[hdu].header[quality_keyword]
 	for bit in ignore_bits:

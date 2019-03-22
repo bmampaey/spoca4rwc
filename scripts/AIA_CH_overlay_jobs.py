@@ -13,10 +13,10 @@ overlay_exec = '/home/rwceventdb/SPoCA/bin/overlay.x'
 overlay_config_file = '/home/rwceventdb/scripts/AIA_CH_overlay.config'
 
 # Directory where the prepped AIA files are located
-aia_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/aia.lev1.prepped/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
+aia_file_pattern = '/data/SDO/public/AIA_quicklook/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/H{date.hour:02d}00/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
 
 # Directory where the prepped HMI files are located
-hmi_file_pattern = '/data/SDO/public/AIA_HMI_1h_synoptic/hmi.m_45s.prepped/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
+hmi_file_pattern = '/data/SDO/public/HMI_quicklook/magnetogram/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
 
 # Wavelengths of AIA data to run the overlay program on
 AIA_wavelengths = [193]
