@@ -9,7 +9,7 @@ from event_db import EventDB
 
 def parse_date(date_string):
 	# TODO replace with fromisoformat when migrating to python 3.7
-	for date_format in '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M', '%Y-%m-%dT%H', '%Y-%m-%d'::
+	for date_format in '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M', '%Y-%m-%dT%H', '%Y-%m-%d':
 		try:
 			result = datetime.strptime(date_string, date_format)
 		except ValueError:

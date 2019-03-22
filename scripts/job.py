@@ -34,7 +34,7 @@ class Job:
 		# Add kwargs
 		for key, value in merged_kwargs.items():
 			command.append('--'+key)
-			if value:
+			if value is not None:
 				command.append(value)
 		
 		# Add args
