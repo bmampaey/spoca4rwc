@@ -176,7 +176,7 @@ def track_maps(tracked_maps, untracked_maps, newly_tracked_maps):
 	return tracked_maps + untracked_maps, [], newly_tracked_maps + untracked_maps
 
 
-def run_spoca_jobs(start_date, end_date, max_delay, tracked_maps = None, untracked_maps = None):
+def run_spoca_jobs(start_date, end_date, tracked_maps = None, untracked_maps = None):
 	'''Run the SPoCA jobs to create and track the CHMaps'''
 	
 	# If no tracked maps were given, we assumed all existing are
@@ -202,16 +202,7 @@ def run_spoca_jobs(start_date, end_date, max_delay, tracked_maps = None, untrack
 		try:
 			AIA_images = get_AIA_files(date, AIA_wavelengths)
 		except FileNotFoundError as why:
-			
-			logging.info('Missing AIA files for date %s', date)
-			
-			# If max_delay has passed, then we continue, else we stop
-			if datetime.now() - date >= max_delay:
-				logging.warning('Max delay %s was passed, skipping missing files' % max_delay)
-				continue
-			else:
-				logging.info('Max delay %s was not passed, waiting missing files' % max_delay)
-				break
+			logging.warning('Missing AIA files for date %s, skipping missing files!', date)
 		
 		# Get the list of HMI images
 		try:

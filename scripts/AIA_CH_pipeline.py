@@ -30,7 +30,6 @@ if __name__ == '__main__':
 	parser.add_argument('--log_file', '-l', help = 'The file path of the log file')
 	parser.add_argument('--start_date', '-s', default = '2010-05-20', type=parse_date, help = 'Start date of AIA files, in form YYYY-MM-DD')
 	parser.add_argument('--end_date', '-e', default = datetime.utcnow().strftime('%Y-%m-%d'), type=parse_date, help = 'End date of AIA files, in form YYYY-MM-DD')
-	parser.add_argument('--max_delay', '-m', default = 15, type = int, help = 'Max delay in days after which missing AIA files will be ignored')
 	parser.add_argument('--do_not_submit', action='store_true', help = 'If set, the events will not be submitted')
 	parser.add_argument('--untracked_maps', '-u', metavar = 'MAP', nargs='*', help = 'File paths of not yet tracked CH maps')
 	
@@ -44,7 +43,7 @@ if __name__ == '__main__':
 	
 	# Run the spoca jobs
 	try:
-		CH_maps = run_spoca_jobs(args.start_date, args.end_date, max_delay = timedelta(days=args.max_delay), untracked_maps = args.untracked_maps)
+		CH_maps = run_spoca_jobs(args.start_date, args.end_date, untracked_maps = args.untracked_maps)
 	except Exception as why:
 		logging.critical(str(why))
 		sys.exit(1)
