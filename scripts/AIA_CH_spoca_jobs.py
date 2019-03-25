@@ -226,6 +226,7 @@ def run_spoca_jobs(start_date, end_date, tracked_maps = None, untracked_maps = N
 			AIA_images = get_AIA_files(date, AIA_wavelengths)
 		except FileNotFoundError as why:
 			logging.warning('Missing AIA files for date %s, skipping missing files!', date)
+			continue
 		
 		# Get the list of HMI images
 		try:
