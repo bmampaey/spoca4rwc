@@ -29,10 +29,13 @@ def submit_CHMap_events(map_path, event_db):
 		
 		# Create the SPOCA_CoronalHoleStatistics events
 		for event in events['spoca_coronal_hole_statistics']:
-			try:
-				event_db.create_event(event)
-			except EventDBError as why:
-				logging.error('Failed to submit event "%s": %s', event['name'], why)
+			if event['data']['PixelsNumber'] > 0:
+				try:
+					event_db.create_event(event)
+				except EventDBError as why:
+					logging.error('Failed to submit event "%s": %s', event['name'], why)
+			else:
+				logging.warning('SPOCA_CoronalHoleStatistics event "%s" has PixelsNumber <=0, skipping!')
 		
 		# Create or update the SPOCA_CoronalHole event
 		try:
