@@ -48,7 +48,7 @@ def create_overlays(map, output_directory):
 	
 	# Check if the job ran succesfully
 	if return_code != 0:
-		raise JobError(return_code, output, error, job_name = 'overlay', segmented_map = segmented_map)
+		raise JobError(return_code, output, error, job_name = 'overlay', segmented_map = map)
 	elif not os.path.exists(map):
 		raise JobError(message = 'Could not find output file {map}', map = map)
 	else:
