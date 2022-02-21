@@ -7,10 +7,10 @@ from datetime import datetime
 from job import Job, JobError
 
 # Path to the overlay program
-overlay_exec = '/home/rwceventdb/SPoCA/bin/overlay.x'
+overlay_exec = '/opt/spoca4rwc/SPoCA/bin/overlay.x'
 
 # Path to the overlay program config file
-overlay_config_file = '/home/rwceventdb/scripts/AIA_CH_overlay.config'
+overlay_config_file = '/opt/spoca4rwc/scripts/AIA_CH_overlay.config'
 
 # Directory where the prepped AIA files are located
 aia_file_pattern = '/data/SDO/public/AIA_quicklook/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/H{date.hour:02d}00/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'

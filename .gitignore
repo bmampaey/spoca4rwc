@@ -103,18 +103,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# Hidden files and folders
-.*
-
-# Non versioned stuff
-logrotate.state
-python
-SPoCA
-sunpy
-jsonschema2popo
-cfitsio
-CH_events
-CH_maps
-trash
-fv5.5
-log_v1
+# Compiled SPoCA executables
+SPoCA/bin/

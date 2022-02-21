@@ -26,7 +26,7 @@ region_stats_hdu_names = ['AIA_193_CoronalHoleStats']
 spoca_version = '2.0'
 
 # Directory to output the events
-events_directory = '/data/RWC/SPoCA_v2/CH_events/'
+events_directory = '/data/spoca/spoca4rwc/quicklook/CH_events/'
 
 
 def get_event(event_type, data, name = None):

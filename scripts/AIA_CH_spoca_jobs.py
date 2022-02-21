@@ -10,31 +10,31 @@ from AIA_quality import get_quality, get_quality_errors
 
 
 # Path to the classification program
-classification_exec = '/home/rwceventdb/SPoCA/bin/classification.x'
+classification_exec = '/opt/spoca4rwc/SPoCA/bin/classification.x'
 
 # Path to the classification program config file
-classification_config_file = '/home/rwceventdb/scripts/AIA_CH_classification.config'
+classification_config_file = '/opt/spoca4rwc/scripts/AIA_CH_classification.config'
 
 # Path to the centers file
-classification_centers_file = '/data/RWC/SPoCA_v2/CH_maps/centers.txt'
+classification_centers_file = '/data/spoca/spoca4rwc/quicklook/CH_maps/centers.txt'
 
 # The frequency to run the classification program
 classification_run_frequency = timedelta(hours = 4)
 
 # Path to the get_CH_map program
-get_CH_map_exec = '/home/rwceventdb/SPoCA/bin/get_CH_map.x'
+get_CH_map_exec = '/opt/spoca4rwc/SPoCA/bin/get_CH_map.x'
 
 # Path to the get_CH_map program config file
-get_CH_map_config_file = '/home/rwceventdb/scripts/AIA_CH_get_CH_map.config'
+get_CH_map_config_file = '/opt/spoca4rwc/scripts/AIA_CH_get_CH_map.config'
 
 # Path to the tracking program
-tracking_exec = '/home/rwceventdb/SPoCA/bin/tracking.x'
+tracking_exec = '/opt/spoca4rwc/SPoCA/bin/tracking.x'
 
 # Path to the tracking program config file
-tracking_config_file = '/home/rwceventdb/scripts/AIA_CH_tracking.config'
+tracking_config_file = '/opt/spoca4rwc/scripts/AIA_CH_tracking.config'
 
 # Path to the tracking color file
-tracking_color_file = '/data/RWC/SPoCA_v2/CH_maps/tracking_color.txt'
+tracking_color_file = '/data/spoca/spoca4rwc/quicklook/CH_maps/tracking_color.txt'
 
 # The minimum number of files that overlaps with the previous tracking (see maxDeltaT)
 tracking_overlap = 6
@@ -43,7 +43,7 @@ tracking_overlap = 6
 tracking_run_count = 3
 
 # Directory to output the maps
-maps_directory = '/data/RWC/SPoCA_v2/CH_maps/'
+maps_directory = '/data/spoca/spoca4rwc/quicklook/CH_maps/'
 
 # Directory where the prepped AIA files are located
 aia_file_pattern = '/data/SDO/public/AIA_quicklook/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/H{date.hour:02d}00/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
