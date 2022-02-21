@@ -8,11 +8,11 @@ LFLAGS=-lcfitsio $(MAGICKLFLAGS)
 DFLAGS= -DMAGICK 
 
 all:bin/overlay.x
-clean: rm bin/overlay.x objects/overlay.o objects/EUVImage.o objects/SunImage.o objects/FitsFile.o objects/Header.o objects/WCS.o objects/Image.o objects/Coordinate.o objects/MagickImage.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o
+clean: rm bin/overlay.x objects/overlay.o objects/EUVImage.o objects/SunImage.o objects/FitsFile.o objects/Header.o objects/WCS.o objects/Image.o objects/Coordinate.o objects/MagickImage.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o
 
 
-bin/overlay.x : overlay.mk objects/overlay.o objects/EUVImage.o objects/SunImage.o objects/FitsFile.o objects/Header.o objects/WCS.o objects/Image.o objects/Coordinate.o objects/MagickImage.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o | bin
-	$(CC) $(CFLAGS) $(DFLAGS) objects/overlay.o objects/EUVImage.o objects/SunImage.o objects/FitsFile.o objects/Header.o objects/WCS.o objects/Image.o objects/Coordinate.o objects/MagickImage.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o $(LFLAGS) -o bin/overlay.x
+bin/overlay.x : overlay.mk objects/overlay.o objects/EUVImage.o objects/SunImage.o objects/FitsFile.o objects/Header.o objects/WCS.o objects/Image.o objects/Coordinate.o objects/MagickImage.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o | bin
+	$(CC) $(CFLAGS) $(DFLAGS) objects/overlay.o objects/EUVImage.o objects/SunImage.o objects/FitsFile.o objects/Header.o objects/WCS.o objects/Image.o objects/Coordinate.o objects/MagickImage.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o $(LFLAGS) -o bin/overlay.x
 
 objects/overlay.o : overlay.mk programs/overlay.cpp classes/tools.h classes/constants.h classes/mainutilities.h classes/ArgParser.h classes/ColorMap.h classes/MagickImage.h classes/EUVImage.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) programs/overlay.cpp -o objects/overlay.o
@@ -47,8 +47,11 @@ objects/ColorMap.o : overlay.mk classes/ColorMap.cpp classes/Header.h classes/Su
 objects/ArgParser.o : overlay.mk classes/ArgParser.cpp | objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/ArgParser.cpp -o objects/ArgParser.o
 
-objects/mainutilities.o : overlay.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
+objects/mainutilities.o : overlay.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/SUVIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/mainutilities.cpp -o objects/mainutilities.o
+
+objects/SUVIImage.o : overlay.mk classes/SUVIImage.cpp classes/EUVImage.h classes/Header.h| objects
+	$(CC) -c $(CFLAGS) $(DFLAGS) classes/SUVIImage.cpp -o objects/SUVIImage.o
 
 objects/HMIImage.o : overlay.mk classes/HMIImage.cpp classes/EUVImage.h classes/Header.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/HMIImage.cpp -o objects/HMIImage.o

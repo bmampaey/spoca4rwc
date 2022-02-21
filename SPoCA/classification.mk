@@ -3,16 +3,16 @@ TRACKINGLFLAGS=-lpthread
 IDLLFLAGS=-L /usr/local/idl/idl706/bin/bin.linux.x86_64 -lpthread -lidl -lXp -lXpm -lXmu -lXext -lXt -lSM -lICE  -lXinerama -lX11 -ldl -ltermcap -lrt -lm /usr/lib/libXm.a
 MAGICKLFLAGS=`Magick++-config --ldflags --libs`
 MAGICKCFLAGS=`Magick++-config --cppflags`
-CFLAGS=-Wall -fkeep-inline-functions -g -O3  -I /home/rwceventdb/cfitsio/include
-LFLAGS=-L /home/rwceventdb/cfitsio/lib -lcfitsio
+CFLAGS=-Wall -fkeep-inline-functions -g -O3
+LFLAGS=-lcfitsio
 DFLAGS=
 
 all:bin/classification.x
-clean: rm bin/classification.x objects/classification.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/SegmentationStats.o objects/FeatureVector.o objects/HistogramPCMClassifier.o objects/HistogramPCM2Classifier.o objects/HistogramFCMClassifier.o objects/HistogramClassifier.o objects/Image.o objects/SPoCA2Classifier.o objects/SPoCAClassifier.o objects/PCM2Classifier.o objects/PFCMClassifier.o objects/PCMClassifier.o objects/FCMClassifier.o objects/Classifier.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/tools.o
+clean: rm bin/classification.x objects/classification.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/SegmentationStats.o objects/FeatureVector.o objects/HistogramPCMClassifier.o objects/HistogramPCM2Classifier.o objects/HistogramFCMClassifier.o objects/HistogramClassifier.o objects/Image.o objects/SPoCA2Classifier.o objects/SPoCAClassifier.o objects/PCM2Classifier.o objects/PFCMClassifier.o objects/PCMClassifier.o objects/FCMClassifier.o objects/Classifier.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/tools.o
 
 
-bin/classification.x : classification.mk objects/classification.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/SegmentationStats.o objects/FeatureVector.o objects/HistogramPCMClassifier.o objects/HistogramPCM2Classifier.o objects/HistogramFCMClassifier.o objects/HistogramClassifier.o objects/Image.o objects/SPoCA2Classifier.o objects/SPoCAClassifier.o objects/PCM2Classifier.o objects/PFCMClassifier.o objects/PCMClassifier.o objects/FCMClassifier.o objects/Classifier.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/tools.o | bin
-	$(CC) $(CFLAGS) $(DFLAGS) objects/classification.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/SegmentationStats.o objects/FeatureVector.o objects/HistogramPCMClassifier.o objects/HistogramPCM2Classifier.o objects/HistogramFCMClassifier.o objects/HistogramClassifier.o objects/Image.o objects/SPoCA2Classifier.o objects/SPoCAClassifier.o objects/PCM2Classifier.o objects/PFCMClassifier.o objects/PCMClassifier.o objects/FCMClassifier.o objects/Classifier.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/tools.o $(LFLAGS) -o bin/classification.x
+bin/classification.x : classification.mk objects/classification.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/SegmentationStats.o objects/FeatureVector.o objects/HistogramPCMClassifier.o objects/HistogramPCM2Classifier.o objects/HistogramFCMClassifier.o objects/HistogramClassifier.o objects/Image.o objects/SPoCA2Classifier.o objects/SPoCAClassifier.o objects/PCM2Classifier.o objects/PFCMClassifier.o objects/PCMClassifier.o objects/FCMClassifier.o objects/Classifier.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/tools.o | bin
+	$(CC) $(CFLAGS) $(DFLAGS) objects/classification.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/SegmentationStats.o objects/FeatureVector.o objects/HistogramPCMClassifier.o objects/HistogramPCM2Classifier.o objects/HistogramFCMClassifier.o objects/HistogramClassifier.o objects/Image.o objects/SPoCA2Classifier.o objects/SPoCAClassifier.o objects/PCM2Classifier.o objects/PFCMClassifier.o objects/PCMClassifier.o objects/FCMClassifier.o objects/Classifier.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/tools.o $(LFLAGS) -o bin/classification.x
 
 objects/classification.o : classification.mk programs/classification.cpp classes/tools.h classes/constants.h classes/mainutilities.h classes/ArgParser.h classes/ColorMap.h classes/EUVImage.h classes/Classifier.h classes/FCMClassifier.h classes/PCMClassifier.h classes/PFCMClassifier.h classes/PCM2Classifier.h classes/SPoCAClassifier.h classes/SPoCA2Classifier.h classes/HistogramFCMClassifier.h classes/HistogramPCM2Classifier.h classes/HistogramPCMClassifier.h classes/FeatureVector.h classes/SegmentationStats.h classes/FitsFile.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) programs/classification.cpp -o objects/classification.o
@@ -23,7 +23,7 @@ objects/FitsFile.o : classification.mk classes/FitsFile.cpp classes/tools.h clas
 objects/Coordinate.o : classification.mk classes/Coordinate.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/Coordinate.cpp -o objects/Coordinate.o
 
-objects/Header.o : classification.mk classes/Header.cpp | objects
+objects/Header.o : classification.mk classes/Header.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/Header.cpp -o objects/Header.o
 
 objects/SegmentationStats.o : classification.mk classes/SegmentationStats.cpp classes/constants.h classes/tools.h classes/Coordinate.h classes/EUVImage.h classes/ColorMap.h classes/FitsFile.h| objects
@@ -86,8 +86,11 @@ objects/ColorMap.o : classification.mk classes/ColorMap.cpp classes/Header.h cla
 objects/ArgParser.o : classification.mk classes/ArgParser.cpp | objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/ArgParser.cpp -o objects/ArgParser.o
 
-objects/mainutilities.o : classification.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
+objects/mainutilities.o : classification.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/SUVIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/mainutilities.cpp -o objects/mainutilities.o
+
+objects/SUVIImage.o : classification.mk classes/SUVIImage.cpp classes/EUVImage.h classes/Header.h| objects
+	$(CC) -c $(CFLAGS) $(DFLAGS) classes/SUVIImage.cpp -o objects/SUVIImage.o
 
 objects/HMIImage.o : classification.mk classes/HMIImage.cpp classes/EUVImage.h classes/Header.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/HMIImage.cpp -o objects/HMIImage.o
@@ -107,8 +110,8 @@ objects/EITImage.o : classification.mk classes/EITImage.cpp classes/EUVImage.h c
 objects/tools.o : classification.mk classes/tools.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/tools.cpp -o objects/tools.o
 
-objects :
+objects : 
 	 mkdir -p objects
 
-bin :
+bin : 
 	 mkdir -p bin

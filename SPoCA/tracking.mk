@@ -3,21 +3,21 @@ TRACKINGLFLAGS=-lpthread
 IDLLFLAGS=-L /usr/local/idl/idl706/bin/bin.linux.x86_64 -lpthread -lidl -lXp -lXpm -lXmu -lXext -lXt -lSM -lICE  -lXinerama -lX11 -ldl -ltermcap -lrt -lm /usr/lib/libXm.a
 MAGICKLFLAGS=`Magick++-config --ldflags --libs`
 MAGICKCFLAGS=`Magick++-config --cppflags`
-CFLAGS=-Wall -fkeep-inline-functions -g -O3 -I /home/rwceventdb/cfitsio/include
-LFLAGS=-L /home/rwceventdb/cfitsio/lib -lcfitsio  $(TRACKINGLFLAGS)  $(TRACKINGLFLAGS)
+CFLAGS=-Wall -fkeep-inline-functions -g -O3
+LFLAGS=-lcfitsio  $(TRACKINGLFLAGS)  $(TRACKINGLFLAGS)
 DFLAGS=
 
 all:bin/tracking.x
-clean: rm bin/tracking.x objects/tracking.o objects/Header.o objects/FitsFile.o objects/Coordinate.o objects/trackable.o objects/Region.o objects/ColorMap.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/EUVImage.o objects/FeatureVector.o objects/tools.o
+clean: rm bin/tracking.x objects/tracking.o objects/Header.o objects/FitsFile.o objects/Coordinate.o objects/trackable.o objects/Region.o objects/ColorMap.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/EUVImage.o objects/FeatureVector.o objects/tools.o
 
 
-bin/tracking.x : tracking.mk objects/tracking.o objects/Header.o objects/FitsFile.o objects/Coordinate.o objects/trackable.o objects/Region.o objects/ColorMap.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/EUVImage.o objects/FeatureVector.o objects/tools.o | bin
-	$(CC) $(CFLAGS) $(DFLAGS) objects/tracking.o objects/Header.o objects/FitsFile.o objects/Coordinate.o objects/trackable.o objects/Region.o objects/ColorMap.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/EUVImage.o objects/FeatureVector.o objects/tools.o $(LFLAGS) -o bin/tracking.x
+bin/tracking.x : tracking.mk objects/tracking.o objects/Header.o objects/FitsFile.o objects/Coordinate.o objects/trackable.o objects/Region.o objects/ColorMap.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/EUVImage.o objects/FeatureVector.o objects/tools.o | bin
+	$(CC) $(CFLAGS) $(DFLAGS) objects/tracking.o objects/Header.o objects/FitsFile.o objects/Coordinate.o objects/trackable.o objects/Region.o objects/ColorMap.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/EUVImage.o objects/FeatureVector.o objects/tools.o $(LFLAGS) -o bin/tracking.x
 
 objects/tracking.o : tracking.mk programs/tracking.cpp classes/tools.h classes/constants.h classes/mainutilities.h classes/ArgParser.h classes/ColorMap.h classes/Region.h classes/trackable.h classes/TrackingRelation.h classes/FitsFile.h classes/Header.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) programs/tracking.cpp -o objects/tracking.o
 
-objects/Header.o : tracking.mk classes/Header.cpp | objects
+objects/Header.o : tracking.mk classes/Header.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/Header.cpp -o objects/Header.o
 
 objects/FitsFile.o : tracking.mk classes/FitsFile.cpp classes/tools.h classes/constants.h classes/Header.h classes/Coordinate.h| objects
@@ -47,8 +47,11 @@ objects/Image.o : tracking.mk classes/Image.cpp classes/tools.h classes/constant
 objects/ArgParser.o : tracking.mk classes/ArgParser.cpp | objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/ArgParser.cpp -o objects/ArgParser.o
 
-objects/mainutilities.o : tracking.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
+objects/mainutilities.o : tracking.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/SUVIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/mainutilities.cpp -o objects/mainutilities.o
+
+objects/SUVIImage.o : tracking.mk classes/SUVIImage.cpp classes/EUVImage.h classes/Header.h| objects
+	$(CC) -c $(CFLAGS) $(DFLAGS) classes/SUVIImage.cpp -o objects/SUVIImage.o
 
 objects/HMIImage.o : tracking.mk classes/HMIImage.cpp classes/EUVImage.h classes/Header.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/HMIImage.cpp -o objects/HMIImage.o
@@ -74,8 +77,8 @@ objects/FeatureVector.o : tracking.mk classes/FeatureVector.cpp classes/constant
 objects/tools.o : tracking.mk classes/tools.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/tools.cpp -o objects/tools.o
 
-objects :
+objects : 
 	 mkdir -p objects
 
-bin :
+bin : 
 	 mkdir -p bin

@@ -3,16 +3,16 @@ TRACKINGLFLAGS=-lpthread
 IDLLFLAGS=-L /usr/local/idl/idl706/bin/bin.linux.x86_64 -lpthread -lidl -lXp -lXpm -lXmu -lXext -lXt -lSM -lICE  -lXinerama -lX11 -ldl -ltermcap -lrt -lm /usr/lib/libXm.a
 MAGICKLFLAGS=`Magick++-config --ldflags --libs`
 MAGICKCFLAGS=`Magick++-config --cppflags`
-CFLAGS=-Wall -fkeep-inline-functions -g -O3  -I /home/rwceventdb/cfitsio/include
-LFLAGS=-L /home/rwceventdb/cfitsio/lib -lcfitsio
+CFLAGS=-Wall -fkeep-inline-functions -g -O3
+LFLAGS=-lcfitsio
 DFLAGS=
 
 all:bin/get_CH_map.x
-clean: rm bin/get_CH_map.x objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o
+clean: rm bin/get_CH_map.x objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o
 
 
-bin/get_CH_map.x : get_CH_map.mk objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o | bin
-	$(CC) $(CFLAGS) $(DFLAGS) objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o $(LFLAGS) -o bin/get_CH_map.x
+bin/get_CH_map.x : get_CH_map.mk objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o | bin
+	$(CC) $(CFLAGS) $(DFLAGS) objects/get_CH_map.o objects/CoronalHole.o objects/FitsFile.o objects/Coordinate.o objects/Header.o objects/RegionStats.o objects/SegmentationStats.o objects/Region.o objects/EUVImage.o objects/SunImage.o objects/WCS.o objects/Image.o objects/ColorMap.o objects/ArgParser.o objects/mainutilities.o objects/SUVIImage.o objects/HMIImage.o objects/SWAPImage.o objects/AIAImage.o objects/EUVIImage.o objects/EITImage.o objects/FeatureVector.o objects/tools.o $(LFLAGS) -o bin/get_CH_map.x
 
 objects/get_CH_map.o : get_CH_map.mk programs/get_CH_map.cpp classes/tools.h classes/constants.h classes/mainutilities.h classes/ArgParser.h classes/ColorMap.h classes/EUVImage.h classes/CoronalHole.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) programs/get_CH_map.cpp -o objects/get_CH_map.o
@@ -26,7 +26,7 @@ objects/FitsFile.o : get_CH_map.mk classes/FitsFile.cpp classes/tools.h classes/
 objects/Coordinate.o : get_CH_map.mk classes/Coordinate.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/Coordinate.cpp -o objects/Coordinate.o
 
-objects/Header.o : get_CH_map.mk classes/Header.cpp | objects
+objects/Header.o : get_CH_map.mk classes/Header.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/Header.cpp -o objects/Header.o
 
 objects/RegionStats.o : get_CH_map.mk classes/RegionStats.cpp classes/constants.h classes/tools.h classes/Coordinate.h classes/EUVImage.h classes/ColorMap.h classes/FitsFile.h classes/Region.h classes/SegmentationStats.h| objects
@@ -56,8 +56,11 @@ objects/ColorMap.o : get_CH_map.mk classes/ColorMap.cpp classes/Header.h classes
 objects/ArgParser.o : get_CH_map.mk classes/ArgParser.cpp | objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/ArgParser.cpp -o objects/ArgParser.o
 
-objects/mainutilities.o : get_CH_map.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
+objects/mainutilities.o : get_CH_map.mk classes/mainutilities.cpp classes/FeatureVector.h classes/EUVImage.h classes/EITImage.h classes/EUVIImage.h classes/AIAImage.h classes/SWAPImage.h classes/HMIImage.h classes/SUVIImage.h classes/ColorMap.h classes/Header.h classes/Coordinate.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/mainutilities.cpp -o objects/mainutilities.o
+
+objects/SUVIImage.o : get_CH_map.mk classes/SUVIImage.cpp classes/EUVImage.h classes/Header.h| objects
+	$(CC) -c $(CFLAGS) $(DFLAGS) classes/SUVIImage.cpp -o objects/SUVIImage.o
 
 objects/HMIImage.o : get_CH_map.mk classes/HMIImage.cpp classes/EUVImage.h classes/Header.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/HMIImage.cpp -o objects/HMIImage.o
@@ -80,8 +83,8 @@ objects/FeatureVector.o : get_CH_map.mk classes/FeatureVector.cpp classes/consta
 objects/tools.o : get_CH_map.mk classes/tools.cpp classes/constants.h| objects
 	$(CC) -c $(CFLAGS) $(DFLAGS) classes/tools.cpp -o objects/tools.o
 
-objects :
+objects : 
 	 mkdir -p objects
 
-bin :
+bin : 
 	 mkdir -p bin
