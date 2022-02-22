@@ -20,4 +20,11 @@ Configuration files for the programs of the SPoCA suite:
  * __scripts/AIA_CH_get_CH_map.config__: Config file for the get_CH_map.x program
  * __scripts/AIA_CH_tracking.config__: Config file for the tracking.x program
  * __scripts/AIA_CH_overlay.config__: Config file for the overlay.x program
- * __SPoCA/classes/constants.h__: Constants for the compilation of the programs
+
+The executables of the SPoCA suite can be compiled using the following Make files:
+ * __SPoCA/classification.mk__: To compile SPoCA/bin/classification.x
+ * __SPoCA/get_CH_map.mk__: To compile SPoCA/bin/get_CH_map.x
+ * __SPoCA/tracking.mk__: To compile SPoCA/bin/tracking.x
+ * __SPoCA/overlay.mk__: To compile SPoCA/bin/overlay.x (not used in the pipeline, see above)
+ * __SPoCA/fits2png.mk__: To compile SPoCA/bin/fits2png.x (not used in the pipeline, useful to create png of the SDO FITS files)
+ * __SPoCA/map2png.mk__: To compile SPoCA/bin/map2png.x (not used in the pipeline, useful to create png of the CHMap FITS files)
