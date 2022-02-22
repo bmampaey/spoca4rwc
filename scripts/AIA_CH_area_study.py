@@ -16,11 +16,16 @@ region_hdu_name = 'Regions'
 # The map HDUs that contains the region stats
 region_stats_hdu_name = 'AIA_193_CoronalHoleStats'
 
-def get_heliographic_coordinate_stonyhurst(map, x, y):
+def get_heliographic_coordinate_stonyhurst(map, x, y, origin = 0):
 	'''Convert pixel coordintaes to Heliographic Stonyhurst Longitude Latitude'''
 	
+	# The FITS coordinate system starts at (1, 1) so substract 1 to convert it to the Map coordinate system that starts at (0, 0)
+	if origin == 1:
+		x = x - 1
+		y = y - 1
+	
 	# Convert the pixel coordinates to world coordinates
-	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+	world = map.pixel_to_world(x * pixel, y * pixel)
 	
 	# Convert the world coordinates to Heliographic Stonyhurst
 	stonyhurst = world.transform_to(frames.HeliographicStonyhurst)
@@ -32,7 +37,7 @@ def get_stats(map, region, region_stat):
 	'''Return a region stats'''
 	
 	# Convert the center pixel coordinates to Heliographic Stonyhurst
-	center_lon, center_lat = get_heliographic_coordinate_stonyhurst(map, float(region_stat['XCENTER']), float(region_stat['YCENTER']))
+	center_lon, center_lat = get_heliographic_coordinate_stonyhurst(map, float(region_stat['XCENTER']), float(region_stat['YCENTER']), origin = 1)
 	
 	stats = {
 		'Id': int(region['ID']),

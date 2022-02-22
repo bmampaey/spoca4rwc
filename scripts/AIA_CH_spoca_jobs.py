@@ -213,7 +213,6 @@ def run_spoca_jobs(start_date, end_date, tracked_maps = None, untracked_maps = N
 		# We need to remove the untracked maps from the tracked maps
 		for untracked_map in untracked_maps:
 			tracked_maps = list(filter(lambda tracked_map: not os.path.samefile(tracked_map, untracked_map), tracked_maps))
-		
 	
 	# We will return the list of all newly tracked maps
 	newly_tracked_maps = list()

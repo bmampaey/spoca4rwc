@@ -92,11 +92,16 @@ def get_heliocentric_coordinate_heeq(world, name = None):
 	return get_event('_HeliocentricCoordinate_HEEQ', data, name = name)
 
 
-def get_heliographic_coordinate(map, x, y, time, name = None):
+def get_heliographic_coordinate(map, x, y, time, name = None, origin = 0):
 	'''Return a _HeliographicCoordinate event'''
 	
+	# The FITS coordinate system starts at (1, 1) so substract 1 to convert it to the Map coordinate system that starts at (0, 0)
+	if origin == 1:
+		x = x - 1
+		y = y - 1
+	
 	# Convert the pixel coordinates to world coordinates
-	world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+	world = map.pixel_to_world(x * pixel, y * pixel)
 	
 	data = {
 		'Time': time,
@@ -107,7 +112,7 @@ def get_heliographic_coordinate(map, x, y, time, name = None):
 	return get_event('_HeliographicCoordinate', data, name = name)
 
 
-def get_solar_surface_contour(map, chaincode, name = None):
+def get_solar_surface_contour(map, chaincode, name = None, origin = 0):
 	'''Return a _SolarSurface_Contour event'''
 	
 	# Compute the chain code in the different coordinates systems
@@ -120,8 +125,13 @@ def get_solar_surface_contour(map, chaincode, name = None):
 		if (x == 0 and y == 0):
 			break
 		else:
+			# The FITS coordinate system starts at (1, 1) so substract 1 to convert it to the Map coordinate system that starts at (0, 0)
+			if origin == 1:
+				x = x - 1
+				y = y - 1
+			
 			# Convert the pixel coordinates to world coordinates
-			world = map.pixel_to_world(x * pixel, y * pixel, origin = 1)
+			world = map.pixel_to_world(x * pixel, y * pixel)
 			
 			# If we cannot convert some pixel coordinates to sun coordinates, we just skip it
 			try:
@@ -165,8 +175,8 @@ def get_spoca_coronal_hole_detection(map, region, region_stat, chaincode, name =
 		'DetectionTime': region['DATE_OBS'] + 'Z',
 		'AreaError': float(region_stat['AREA_ATDISKCENTER_UNCERTAINITY']),
 		'Area': float(region_stat['AREA_ATDISKCENTER']),
-		'Location': get_heliographic_coordinate(map, region_stat['XCENTER'], region_stat['YCENTER'], region['DATE_OBS'] + 'Z'),
-		'Contour': get_solar_surface_contour(map, chaincode),
+		'Location': get_heliographic_coordinate(map, region_stat['XCENTER'], region_stat['YCENTER'], region['DATE_OBS'] + 'Z', origin = 1),
+		'Contour': get_solar_surface_contour(map, chaincode, origin = 1),
 	}
 	
 	return get_event('SPOCA_CoronalHoleDetection', data, name = name)
