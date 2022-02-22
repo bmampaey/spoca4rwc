@@ -1,0 +1,3 @@
+astropy~=5.0
+sunpy~=3.0
+matplotlib~=3.0
