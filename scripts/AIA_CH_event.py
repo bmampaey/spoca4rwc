@@ -23,7 +23,7 @@ chaincode_hdu_name = 'ChainCodes'
 region_stats_hdu_names = ['AIA_193_CoronalHoleStats']
 
 # The SPoCA version
-spoca_version = '2.0'
+spoca_version = '2.1'
 
 # Directory to output the events
 events_directory = '/data/spoca/spoca4rwc/quicklook/CH_events/'
