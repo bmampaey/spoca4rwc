@@ -82,7 +82,7 @@ def get_good_file(file_pattern, ignore_bits = None):
 		if ignore_bits is None:
 			quality = get_quality(file_path)
 		else:
-			quality = get_quality(file_path, ignore_bits)
+			quality = get_quality(file_path, ignore_bits = ignore_bits)
 		
 		# A quality of 0 means no defect
 		if quality == 0:
@@ -263,8 +263,8 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description = 'Create and track CH maps')
 	parser.add_argument('--debug', '-d', default = False, action = 'store_true', help = 'Set the logging level to debug')
 	parser.add_argument('--log_file', '-l', help = 'The file path of the log file')
-	parser.add_argument('--start_date', '-s', default = '2010-05-20', help = 'Start date of AIA files, in form YYYY-MM-DD')
-	parser.add_argument('--end_date', '-e', default = datetime.utcnow().strftime('%Y-%m-%d'), help = 'End date of AIA files, in form YYYY-MM-DD')
+	parser.add_argument('--start_date', '-s', required = True, type = datetime.fromisoformat, help = 'Start date of AIA files, in ISO 8601 format')
+	parser.add_argument('--end_date', '-e', default = datetime.utcnow().replace(hour = 0, minute = 0, second = 0, microsecond = 0), type = datetime.fromisoformat, help = 'End date of AIA files, in ISO 8601 format')
 	parser.add_argument('--tracked_maps', '-t', metavar = 'MAP', nargs='*', help = 'File paths of previously tracked CH maps')
 	parser.add_argument('--untracked_maps', '-u', metavar = 'MAP', nargs='*', help = 'File paths of not yet tracked CH maps')
 	
@@ -276,13 +276,9 @@ if __name__ == '__main__':
 	else:
 		logging.basicConfig(level = logging.DEBUG if args.debug else logging.INFO, format='%(asctime)s : %(levelname)-8s : %(message)s')
 	
-	# Parse the start and end date
-	start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
-	end_date = datetime.strptime(args.end_date, '%Y-%m-%d') if args.end_date else datetime.utcnow()
-	
 	# Run the SPoCA jobs
 	try:
-		CH_maps = run_spoca_jobs(start_date, end_date, args.tracked_maps, args.untracked_maps)
+		CH_maps = run_spoca_jobs(args.start_date, args.end_date, args.tracked_maps, args.untracked_maps)
 	except Exception as why:
 		logging.critical(str(why))
 		sys.exit(1)

@@ -38,11 +38,22 @@ quality_bits = {
 31	: 'Image not available'
 }
 
-def get_quality(filepath, hdu = 0, quality_keyword = 'QUALITY', ignore_bits = [0, 1, 2, 3, 4, 8, 30]):
+def get_quality(filepath, hdu_id = None, quality_keyword = 'QUALITY', ignore_bits = [0, 1, 2, 3, 4, 8, 30]):
 	'''Return the quality value of the file, with ignore_bits set to 0'''
-	quality = fits.open(filepath)[hdu].header[quality_keyword]
+	
+	with fits.open(filepath) as hdus:
+		if hdu_id is not None:
+			header = hdus[hdu_id].header
+		else:
+			for hdu in hdus:
+				header = hdu.header
+				if quality_keyword in header:
+					break
+		quality = header[quality_keyword]
+	
 	for bit in ignore_bits:
 		quality &= ~(1<<bit)
+	
 	return quality
 
 def get_quality_errors(quality):
@@ -58,13 +69,13 @@ if __name__ == '__main__':
 	
 	parser = argparse.ArgumentParser(description='Test the quality of an AIA FITS file')
 	parser.add_argument('filepath', help='The path to the fits files to test')
-	parser.add_argument('--HDU', '-H', default=0, type = int, help='The HDU number that contains the quality keyword')
+	parser.add_argument('--hdu-id', '-i', metavar = 'HDU ID', type = int, help='The HDU number that contains the quality keyword')
 	parser.add_argument('--keyword', '-K', default='QUALITY', help='The name of the quality keyword')
 	
 	args = parser.parse_args()
 	
 	try:
-		quality = get_quality(args.filepath, args.HDU, args.keyword)
+		quality = get_quality(args.filepath, hdu_id = args.hdu_id, quality_keyword = args.keyword)
 	except Exception as why:
 		print('Error getting quality for file ', args.filepath, ':', why)
 	else:
