@@ -13,7 +13,8 @@ overlay_exec = '/opt/spoca4rwc/SPoCA/bin/overlay.x'
 overlay_config_file = '/opt/spoca4rwc/scripts/AIA_CH_overlay.config'
 
 # Directory where the prepped AIA files are located
-aia_file_pattern = '/data/SDO/public/AIA_quicklook/{wavelength:04d}/{date.year:04d}/{date.month:02d}/{date.day:02d}/H{date.hour:02d}00/AIA.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.{wavelength:04d}.*.fits'
+# example /data/sdo/aia_quicklook/0193/2023/03/01/aia_quicklook.0193.20230301_000000.fits
+aia_file_pattern = '/data/sdo/aia_quicklook/{wavelength:04}/{date:%Y/%m/%d}/aia_quicklook.{wavelength:04}.{date:%Y%m%d_%H}*.fits'
 
 # Directory where the prepped HMI files are located
 hmi_file_pattern = '/data/SDO/public/HMI_quicklook/magnetogram/{date.year:04d}/{date.month:02d}/{date.day:02d}/HMI.{date.year:04d}{date.month:02d}{date.day:02d}_{date.hour:02d}*.*.fits'
