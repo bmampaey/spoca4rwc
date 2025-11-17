@@ -1,8 +1,8 @@
 CC=g++
 TRACKINGLFLAGS=-lpthread
 IDLLFLAGS=-L /usr/local/idl/idl706/bin/bin.linux.x86_64 -lpthread -lidl -lXp -lXpm -lXmu -lXext -lXt -lSM -lICE  -lXinerama -lX11 -ldl -ltermcap -lrt -lm /usr/lib/libXm.a
-MAGICKLFLAGS=`Magick++-config --ldflags --libs`
-MAGICKCFLAGS=`Magick++-config --cppflags`
+MAGICKLFLAGS=`pkg-config --libs Magick++-6.Q16`
+MAGICKCFLAGS=`pkg-config --cflags Magick++-6.Q16`
 CFLAGS=-Wall -fkeep-inline-functions -g -O3 $(MAGICKCFLAGS) 
 LFLAGS=-lcfitsio $(MAGICKLFLAGS) 
 DFLAGS= -DMAGICK 
