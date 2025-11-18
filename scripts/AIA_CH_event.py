@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from astropy.units import pixel, km
 from astropy.io import fits
 from sunpy.map import Map
@@ -207,7 +207,7 @@ def get_spoca_coronal_hole_run(image_time, detections, run_time = None, version 
 	'''Return a SPOCA_CoronalHoleRun event'''
 	
 	data = {
-		'RunTime': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ') if run_time is None else run_time,
+		'RunTime': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ') if run_time is None else run_time,
 		'ImageTime': image_time,
 		'VersionNb': version,
 		'Detections': detections,
