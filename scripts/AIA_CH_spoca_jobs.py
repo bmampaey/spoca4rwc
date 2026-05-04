@@ -40,7 +40,7 @@ tracking_color_file = '/data/spoca/spoca4rwc/quicklook/CH_maps/tracking_color.tx
 tracking_overlap = 6
 
 # The number of CH maps to run the tracking program on
-tracking_run_count = 3
+tracking_run_count = 1
 
 # Directory to output the maps
 maps_directory = '/data/spoca/spoca4rwc/quicklook/CH_maps/'
