@@ -66,8 +66,8 @@ if __name__ == '__main__':
 	# Get the arguments
 	parser = argparse.ArgumentParser(description='Run overlay to plot CH maps over AIA and HMI images')
 	parser.add_argument('--debug', '-d', default=False, action='store_true', help='Set the logging level to debug')
-	parser.add_argument('--log_file', '-l', help='The file path of the log file')
-	parser.add_argument('--output_directory', '-o', default='.', help='The directory where to write the overlays')
+	parser.add_argument('--log-file', '-l', help='The file path of the log file')
+	parser.add_argument('--output-directory', '-o', default='.', help='The directory where to write the overlays')
 	parser.add_argument('maps', metavar='MAP', nargs='+', help='The file path to a tracked SPoCA CHMap')
 
 	args = parser.parse_args()

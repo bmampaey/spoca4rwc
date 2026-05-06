@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	# Get the arguments
 	parser = argparse.ArgumentParser(description='Extract the regions from a CHMap and submit them')
 	parser.add_argument('--debug', '-d', default=False, action='store_true', help='Set the logging level to debug')
-	parser.add_argument('--log_file', '-l', help='The file path of the log file')
+	parser.add_argument('--log-file', '-l', help='The file path of the log file')
 	parser.add_argument('maps', metavar='MAP', nargs='+', help='The file path to a tracked SPoCA CHMap')
 
 	args = parser.parse_args()

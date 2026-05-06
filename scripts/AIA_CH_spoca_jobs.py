@@ -277,19 +277,19 @@ if __name__ == '__main__':
 	# Get the arguments
 	parser = argparse.ArgumentParser(description='Create and track CH maps')
 	parser.add_argument('--debug', '-d', default=False, action='store_true', help='Set the logging level to debug')
-	parser.add_argument('--log_file', '-l', help='The file path of the log file')
+	parser.add_argument('--log-file', '-l', help='The file path of the log file')
 	parser.add_argument(
-		'--start_date', '-s', required=True, type=datetime.fromisoformat, help='Start date of AIA files, in ISO 8601 format'
+		'--start-date', '-s', required=True, type=datetime.fromisoformat, help='Start date of AIA files, in ISO 8601 format'
 	)
 	parser.add_argument(
-		'--end_date',
+		'--end-date',
 		'-e',
 		default=datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0),
 		type=datetime.fromisoformat,
 		help='End date of AIA files, in ISO 8601 format',
 	)
-	parser.add_argument('--tracked_maps', '-t', metavar='MAP', nargs='*', help='File paths of previously tracked CH maps')
-	parser.add_argument('--untracked_maps', '-u', metavar='MAP', nargs='*', help='File paths of not yet tracked CH maps')
+	parser.add_argument('--tracked-maps', '-t', metavar='MAP', nargs='*', help='File paths of previously tracked CH maps')
+	parser.add_argument('--untracked-maps', '-u', metavar='MAP', nargs='*', help='File paths of not yet tracked CH maps')
 
 	args = parser.parse_args()
 

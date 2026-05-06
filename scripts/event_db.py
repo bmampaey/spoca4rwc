@@ -150,7 +150,7 @@ if __name__ == '__main__':
 	# Get the arguments
 	parser = argparse.ArgumentParser(description='Create/Get/Update an event to/from the Event DB')
 	parser.add_argument('--debug', '-d', default=False, action='store_true', help='Set the logging level to debug')
-	parser.add_argument('--log_file', '-l', help='The file path of the log file')
+	parser.add_argument('--log-file', '-l', help='The file path of the log file')
 	parser.add_argument('--get', '-g', nargs=2, metavar=('TYPE', 'NAME'), help='Get an event by type and name')
 	parser.add_argument('--create', '-c', metavar='FILEPATH', help='Create an event from a JSON file')
 	parser.add_argument(

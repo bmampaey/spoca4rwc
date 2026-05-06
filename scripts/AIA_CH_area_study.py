@@ -95,7 +95,7 @@ if __name__ == '__main__':
 		description='Extract the regions from a CHMap and write corresponding events to JSON files'
 	)
 	parser.add_argument('--debug', '-d', default=False, action='store_true', help='Set the logging level to debug')
-	parser.add_argument('--output_file', '-o', default='./stats.csv', help='The output file for the CSV file')
+	parser.add_argument('--output-file', '-o', default='./stats.csv', help='The output file for the CSV file')
 	parser.add_argument('maps', metavar='MAP', nargs='+', help='The file path to a tracked SPoCA CHMap')
 
 	args = parser.parse_args()
